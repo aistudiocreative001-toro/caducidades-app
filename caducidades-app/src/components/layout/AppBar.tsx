@@ -204,7 +204,8 @@ export default function AppBar({ showAdmin = false }: { showAdmin?: boolean }) {
                 <p><strong>Tecnologías:</strong> Next.js 16, React 19, TypeScript, Tailwind CSS, Vercel Blob, TanStack Query</p>
                 <p><strong>Hosting:</strong> Vercel Edge Network</p>
                 <p><strong>Licencia:</strong> Uso interno exclusivo de FitnessZone</p>
-                <p><strong>Desarrollador de IA:</strong> OpenCode (modelo kimi-k2.6)</p>
+                <p><strong>Creador:</strong> Iván Herrero</p>
+                <p><strong>Agente IA:</strong> OpenCode (modelo kimi-k2.6)</p>
               </div>
             </div>
           </div>
