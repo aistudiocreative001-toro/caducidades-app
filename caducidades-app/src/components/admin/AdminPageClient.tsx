@@ -10,11 +10,12 @@ import RestoreModal from '@/components/backup/RestoreModal';
 import { ToastContainer, useToast } from '@/components/ui/Toast';
 import { TIENDAS } from '@/types/product';
 import type { Product } from '@/types/product';
-import { Edit, Trash2, Download, Upload, Plus, AlertCircle, ArrowLeft, RotateCcw, CloudDownload, Truck, Minus } from 'lucide-react';
+import { Edit, Trash2, Download, Upload, Plus, AlertCircle, ArrowLeft, RotateCcw, CloudDownload, Truck, Minus, Printer } from 'lucide-react';
 import Link from 'next/link';
 import Papa from 'papaparse';
 import { getEmojiCategoria } from '@/lib/emojis';
 import { getEstadoStyle } from '@/lib/estado-colors';
+import { generarPDFVentaRecomendada } from '@/lib/pdf';
 
 const isNA = (val: string) => !val || val === '#N/A' || val.trim() === 'N/A' || val.trim() === '';
 
@@ -364,12 +365,23 @@ export default function AdminPageClient() {
             {selectedIds.size > 0 && ` · ${selectedIds.size} seleccionados`}
           </div>
           {selectedIds.size > 0 && (
+            <>
+            <button
+              onClick={() => {
+                const seleccionados = filtrados.filter(p => selectedIds.has(p.id));
+                generarPDFVentaRecomendada(seleccionados, 'Listado de productos seleccionados', `Admin · ${seleccionados.length} productos`);
+              }}
+              className="px-3 py-1.5 text-sm text-[#1565C0] border border-[#1565C0] rounded-lg hover:bg-[#F0F9FF] flex items-center gap-1"
+            >
+              <Printer className="w-3 h-3" /> Imprimir {selectedIds.size}
+            </button>
             <button 
               onClick={handleBulkDelete}
               className="px-3 py-1.5 text-sm text-[#DC2626] border border-[#FEE2E2] rounded-lg hover:bg-[#FEF2F2]"
             >
               <Trash2 className="w-3 h-3 inline mr-1" /> Eliminar {selectedIds.size}
             </button>
+            </>
           )}
         </div>
 

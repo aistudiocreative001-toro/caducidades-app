@@ -98,7 +98,7 @@ export default function TiendaPageClient({ ubi }: TiendaPageClientProps) {
         <div className="flex items-center justify-between mb-6">
           <p className="text-sm text-[#64748B]">
             {modoRecomendado
-              ? `${categoriasRecomendadas.length} categorías · Venta recomendada del día`
+              ? `${categoriasRecomendadas.length} categorías · ${ubi === 'AL' ? 'Movimientos recomendados' : 'Venta recomendada'} del día`
               : `${activos.length} productos · Todos los productos`
             }
           </p>
@@ -109,18 +109,25 @@ export default function TiendaPageClient({ ubi }: TiendaPageClientProps) {
             {modoRecomendado ? (
               <><LayoutGrid className="w-4 h-4" /> Ver todos</>
             ) : (
-              <><Sparkles className="w-4 h-4" /> Venta recomendada</>
+              <><Sparkles className="w-4 h-4" /> {ubi === 'AL' ? 'Movimientos recomendados' : 'Venta recomendada'}</>
             )}
           </button>
 
-          {modoRecomendado && (
-            <button
-              onClick={() => generarPDFVentaRecomendada(categoriasRecomendadas, ubi)}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#1565C0] text-sm font-medium text-[#1565C0] hover:bg-[#F0F9FF] transition-colors"
-            >
-              <Printer className="w-4 h-4" /> Imprimir listado
-            </button>
-          )}
+            {modoRecomendado && categoriasRecomendadas.length > 0 && (
+              <button
+                onClick={() => {
+                  const tienda = TIENDAS.find(t => t.key === ubi);
+                  generarPDFVentaRecomendada(
+                    categoriasRecomendadas,
+                    ubi === 'AL' ? 'Listado de Movimientos Recomendados' : 'Listado de Venta Recomendada',
+                    `${tienda?.nombre || ubi}`
+                  );
+                }}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#1565C0] text-sm font-medium text-[#1565C0] hover:bg-[#F0F9FF] transition-colors"
+              >
+                <Printer className="w-4 h-4" /> Imprimir listado
+              </button>
+            )}
         </div>
         
         {activos.length === 0 ? (

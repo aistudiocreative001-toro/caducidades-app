@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Save, Trash2, ChevronDown } from 'lucide-react';
+import { X, Save, Trash2, ChevronDown, Search } from 'lucide-react';
 import type { Product } from '@/types/product';
 import { TIENDAS, TIPOS_CATEGORIA } from '@/types/product';
 import { useToast } from '@/components/ui/Toast';
@@ -25,6 +25,13 @@ export default function ProductoDrawer({ isOpen, onClose, producto, onSuccess }:
   const ubiRef = useRef<HTMLDivElement>(null);
   const estadoRef = useRef<HTMLDivElement>(null);
 
+  // Smart search state (only for new products)
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<Product[]>([]);
+  const searchRef = useRef<HTMLDivElement>(null);
+
   const [form, setForm] = useState({
     ubi: 'LR',
     codigo: '',
@@ -40,6 +47,7 @@ export default function ProductoDrawer({ isOpen, onClose, producto, onSuccess }:
     tags: '',
   });
 
+  // Reset form when opening/creating
   useEffect(() => {
     if (producto) {
       setForm({
@@ -56,6 +64,8 @@ export default function ProductoDrawer({ isOpen, onClose, producto, onSuccess }:
         observaciones: producto.observaciones,
         tags: producto.tags,
       });
+      setSearchQuery('');
+      setSearchOpen(false);
     } else {
       setForm({
         ubi: 'LR', codigo: '', sku: '', producto: '', marca: '',
@@ -63,18 +73,67 @@ export default function ProductoDrawer({ isOpen, onClose, producto, onSuccess }:
         fecha: new Date().toISOString().split('T')[0],
         estado: 'VIGENTE', observaciones: '', tags: ''
       });
+      setSearchQuery('');
+      setSearchOpen(false);
     }
   }, [producto, isOpen]);
 
-  // Cerrar dropdowns al hacer clic fuera
+  // Fetch all products for smart search when creating new
+  useEffect(() => {
+    if (isOpen && !producto) {
+      fetch('/api/products', { cache: 'no-store' })
+        .then(r => r.json())
+        .then(data => setAllProducts(Array.isArray(data) ? data : []))
+        .catch(() => setAllProducts([]));
+    }
+  }, [isOpen, producto]);
+
+  // Close dropdowns on outside click
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
       if (ubiRef.current && !ubiRef.current.contains(e.target as Node)) setUbiOpen(false);
       if (estadoRef.current && !estadoRef.current.contains(e.target as Node)) setEstadoOpen(false);
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) setSearchOpen(false);
     };
     window.addEventListener('mousedown', handleClick);
     return () => window.removeEventListener('mousedown', handleClick);
   }, []);
+
+  const performSearch = (query: string) => {
+    setSearchQuery(query);
+    if (!query || query.length < 3) {
+      setSearchOpen(false);
+      return;
+    }
+    const q = query.toLowerCase();
+    const matches = allProducts.filter(p =>
+      (p.codigo && p.codigo.toLowerCase().includes(q)) ||
+      (p.sku && p.sku.toLowerCase().includes(q)) ||
+      (p.producto && p.producto.toLowerCase().includes(q))
+    ).slice(0, 5);
+    setSearchResults(matches);
+    setSearchOpen(matches.length > 0);
+  };
+
+  const selectProduct = (p: Product) => {
+    setForm({
+      ubi: form.ubi, // keep current store
+      codigo: p.codigo,
+      sku: p.sku,
+      producto: p.producto,
+      marca: p.marca,
+      tipo: p.tipo,
+      coste: p.coste,
+      uds: p.uds,
+      fecha: p.fecha,
+      estado: 'VIGENTE',
+      observaciones: p.observaciones,
+      tags: p.tags,
+    });
+    setSearchQuery('');
+    setSearchOpen(false);
+    addToast('Datos precargados del producto existente');
+  };
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -159,6 +218,38 @@ export default function ProductoDrawer({ isOpen, onClose, producto, onSuccess }:
                 </div>
 
                 <div className="space-y-4">
+                  {/* Smart search (only when creating new) */}
+                  {!producto && (
+                    <div ref={searchRef} className="relative">
+                      <label className={labelClass}>Buscar existente (EAN / SKU / Nombre)</label>
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#94A3B8]" />
+                        <input
+                          value={searchQuery}
+                          onChange={e => performSearch(e.target.value)}
+                          placeholder="Escribe al menos 3 caracteres..."
+                          className={`${inputClass} pl-10`}
+                        />
+                      </div>
+                      {searchOpen && searchResults.length > 0 && (
+                        <div className="absolute z-50 mt-1 bg-white border border-[#E2E8F0] rounded-lg shadow-lg w-full max-h-64 overflow-y-auto">
+                          {searchResults.map(p => (
+                            <div
+                              key={p.id}
+                              className="flex flex-col gap-0.5 px-3 py-2 cursor-pointer hover:bg-[#F0F9FF] text-sm border-b border-[#F1F5F9] last:border-b-0"
+                              onClick={() => selectProduct(p)}
+                            >
+                              <p className="font-semibold text-[#0F172A] truncate">{p.producto || p.observaciones || '(Sin nombre)'}</p>
+                              <p className="text-xs text-[#64748B]">
+                                {p.codigo} · {p.sku} · {p.marca}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   {/* Ubicación dropdown personalizado */}
                   <div ref={ubiRef}>
                     <label className={labelClass}>Ubicación</label>
