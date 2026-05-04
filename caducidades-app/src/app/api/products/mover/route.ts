@@ -44,8 +44,12 @@ export async function POST(request: NextRequest) {
     }
 
     origen.uds -= totalMovido;
-    origen.costeTotal = origen.uds * origen.coste;
-    if (origen.uds === 0) origen.estado = 'MOVIDO';
+    if (origen.uds <= 0) {
+      // Si se movieron todas las unidades, eliminar el producto del almacén
+      products.splice(idx, 1);
+    } else {
+      origen.costeTotal = origen.uds * origen.coste;
+    }
 
     await writeProducts(products);
     return new NextResponse(JSON.stringify({ ok: true }), {
