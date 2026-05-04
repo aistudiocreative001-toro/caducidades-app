@@ -10,7 +10,7 @@ import RestoreModal from '@/components/backup/RestoreModal';
 import { ToastContainer, useToast } from '@/components/ui/Toast';
 import { TIENDAS } from '@/types/product';
 import type { Product } from '@/types/product';
-import { Edit, Trash2, Download, Upload, Plus, AlertCircle, ArrowLeft, RotateCcw, CloudDownload } from 'lucide-react';
+import { Edit, Trash2, Download, Upload, Plus, AlertCircle, ArrowLeft, RotateCcw, CloudDownload, Truck, Minus } from 'lucide-react';
 import Link from 'next/link';
 import Papa from 'papaparse';
 import { getEmojiCategoria } from '@/lib/emojis';
@@ -37,6 +37,8 @@ export default function AdminPageClient() {
   const [showCaducadosHoy, setShowCaducadosHoy] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
   const [showRestoreModal, setShowRestoreModal] = useState(false);
+  const [moverProduct, setMoverProduct] = useState<Product | null>(null);
+  const [moverDestinos, setMoverDestinos] = useState<Record<string, number>>({});
   const [resetPass, setResetPass] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -214,6 +216,40 @@ export default function AdminPageClient() {
       refetch();
     } catch {
       addToast('Error al eliminar', 'error');
+    }
+  };
+
+  const openMover = (p: Product) => {
+    const destinos: Record<string, number> = {};
+    TIENDAS.forEach(t => {
+      if (t.key !== p.ubi) destinos[t.key] = 0;
+    });
+    const keys = Object.keys(destinos);
+    const base = Math.floor(p.uds / keys.length);
+    const resto = p.uds % keys.length;
+    keys.forEach((k, i) => { destinos[k] = base + (i < resto ? 1 : 0); });
+    setMoverDestinos(destinos);
+    setMoverProduct(p);
+  };
+
+  const handleMoverConfirm = async () => {
+    if (!moverProduct) return;
+    const total = Object.values(moverDestinos).reduce((s, v) => s + (v || 0), 0);
+    if (total === 0) { addToast('Debes mover al menos 1 unidad', 'error'); return; }
+    if (total > moverProduct.uds) { addToast('No hay suficientes unidades', 'error'); return; }
+    try {
+      const res = await fetch('/api/products/mover', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: moverProduct.id, destinos: moverDestinos }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error');
+      addToast('Producto movido correctamente');
+      setMoverProduct(null);
+      refetch();
+    } catch (err: any) {
+      addToast(err.message || 'Error al mover', 'error');
     }
   };
 
@@ -414,6 +450,7 @@ export default function AdminPageClient() {
                           </span>
                         )}
                         <button onClick={() => openEdit(p)} className="text-[#94A3B8] hover:text-[#1565C0] transition-colors"><Edit className="w-4 h-4" /></button>
+                        <button onClick={() => openMover(p)} className="text-[#94A3B8] hover:text-[#FB8C00] transition-colors" title="Mover"><Truck className="w-4 h-4" /></button>
                         <button onClick={() => handleDelete(p.id)} className="text-[#94A3B8] hover:text-[#DC2626] transition-colors"><Trash2 className="w-4 h-4" /></button>
                       </div>
                     </td>
@@ -440,6 +477,101 @@ export default function AdminPageClient() {
         onClose={() => setShowRestoreModal(false)}
         onSuccess={() => { refetch(); addToast('Copia de seguridad restaurada correctamente'); }}
       />
+
+      {/* Modal Mover (Admin) */}
+      {moverProduct && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setMoverProduct(null)} />
+          <div className="relative bg-white rounded-2xl shadow-xl max-w-lg w-full p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-[#0F172A] flex items-center gap-2">
+                <Truck className="w-5 h-5 text-[#FB8C00]" />
+                Mover producto
+              </h2>
+              <button
+                onClick={() => setMoverProduct(null)}
+                className="text-[#64748B] hover:text-[#0F172A]"
+              >✕</button>
+            </div>
+
+            <div className="mb-4 bg-[#F8FAFC] rounded-lg p-3">
+              <p className="font-medium text-[#0F172A]">{moverProduct.producto || moverProduct.observaciones || '(Sin nombre)'}</p>
+              <p className="text-sm text-[#64748B]">
+                {moverProduct.ubi} · {moverProduct.uds} unidades · {moverProduct.costeTotal.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €
+              </p>
+            </div>
+
+            <p className="text-sm font-medium text-[#0F172A] mb-3">Destinos:</p>
+
+            <div className="space-y-3 mb-4">
+              {TIENDAS.filter(t => t.key !== moverProduct.ubi).map((t) => (
+                <div key={t.key} className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full" style={{ backgroundColor: t.color }} />
+                    <span className="text-sm text-[#0F172A] w-20">{t.nombre} ({t.key})</span>
+                  </div>
+                  <div className="flex items-center border border-[#E2E8F0] rounded-lg">
+                    <button
+                      onClick={() => setMoverDestinos(prev => ({
+                        ...prev,
+                        [t.key]: Math.max(0, (prev[t.key] || 0) - 1)
+                      }))}
+                      className="px-3 py-2 hover:bg-[#F1F5F9] rounded-l-lg"
+                    >
+                      <Minus className="w-4 h-4" />
+                    </button>
+                    <input
+                      type="number"
+                      min={0}
+                      max={moverProduct.uds}
+                      value={moverDestinos[t.key] || 0}
+                      onChange={(e) => {
+                        const v = parseInt(e.target.value) || 0;
+                        setMoverDestinos(prev => ({
+                          ...prev,
+                          [t.key]: Math.min(Math.max(0, v), moverProduct.uds)
+                        }));
+                      }}
+                      className="w-16 text-center text-sm border-x border-[#E2E8F0] py-2 focus:outline-none"
+                    />
+                    <button
+                      onClick={() => setMoverDestinos(prev => ({
+                        ...prev,
+                        [t.key]: Math.min(moverProduct.uds, (prev[t.key] || 0) + 1)
+                      }))}
+                      className="px-3 py-2 hover:bg-[#F1F5F9] rounded-r-lg"
+                    >
+                      <Plus className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className={`text-sm mb-4 ${Object.values(moverDestinos).reduce((s, v) => s + (v || 0), 0) > moverProduct.uds ? 'text-[#DC2626]' : 'text-[#64748B]'}`}>
+              Total a mover: {Object.values(moverDestinos).reduce((s, v) => s + (v || 0), 0)} / {moverProduct.uds} unidades
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setMoverProduct(null)}
+                className="flex-1 px-4 py-2 border border-[#E2E8F0] rounded-lg text-sm font-medium text-[#64748B] hover:bg-[#F1F5F9]"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleMoverConfirm}
+                disabled={Object.values(moverDestinos).reduce((s, v) => s + (v || 0), 0) === 0 || Object.values(moverDestinos).reduce((s, v) => s + (v || 0), 0) > moverProduct.uds}
+                className="flex-1 px-4 py-2 rounded-lg text-sm font-medium text-white disabled:opacity-50"
+                style={{ backgroundColor: '#FB8C00' }}
+              >
+                ✅ Confirmar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <ToastContainer toasts={toasts} removeToast={removeToast} />
 
       {/* Modal Resetear BBDD */}

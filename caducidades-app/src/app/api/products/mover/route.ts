@@ -10,9 +10,10 @@ export async function POST(request: NextRequest) {
     if (idx === -1) return NextResponse.json({ error: 'Producto no encontrado' }, { status: 404 });
 
     const origen = products[idx];
-    if (origen.ubi !== 'AL') return NextResponse.json({ error: 'Solo se pueden mover productos del Almacen' }, { status: 400 });
+    const origenUbi = origen.ubi;
+    const TIENDAS_KEYS = ['LR', '3C', 'CL', 'AL'];
 
-    const totalMovido = (destinos.LR || 0) + (destinos['3C'] || 0) + (destinos.CL || 0);
+    const totalMovido = TIENDAS_KEYS.reduce((sum, key) => sum + (destinos[key] || 0), 0);
     if (totalMovido > origen.uds) {
       return NextResponse.json({ error: `No hay suficientes unidades. Disponibles: ${origen.uds}, Intentando mover: ${totalMovido}` }, { status: 400 });
     }
@@ -37,7 +38,7 @@ export async function POST(request: NextRequest) {
         fechaMes: origen.fechaMes,
         dias: origen.dias,
         estado: 'VIGENTE',
-        observaciones: `Movido desde almacen el ${new Date().toISOString().split('T')[0]}`,
+        observaciones: `Movido desde ${origenUbi} el ${new Date().toISOString().split('T')[0]}`,
         tags: origen.tags,
       };
       products.push(nuevo);
@@ -45,7 +46,6 @@ export async function POST(request: NextRequest) {
 
     origen.uds -= totalMovido;
     if (origen.uds <= 0) {
-      // Si se movieron todas las unidades, eliminar el producto del almacén
       products.splice(idx, 1);
     } else {
       origen.costeTotal = origen.uds * origen.coste;
