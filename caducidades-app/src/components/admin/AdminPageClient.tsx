@@ -321,9 +321,10 @@ export default function AdminPageClient() {
                     <td className={`px-2 py-1.5 font-bold text-[11px] ${p.dias <= 0 ? 'text-[#DC2626]' : p.dias <= 30 ? 'text-[#EA580C]' : 'text-[#059669]'}`}>{p.dias}</td>
                     <td className="px-2 py-1.5">
                       <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${
-                        p.estado === 'VIGENTE' ? 'bg-[#ECFDF5] text-[#059669]' :
+                        p.estado === 'VIGENTE' ? 'bg-[#DBEAFE] text-[#1565C0]' :
                         p.estado === 'EN RIESGO' ? 'bg-[#FFF7ED] text-[#EA580C]' :
                         p.estado === 'CADUCADO' ? 'bg-[#FEF2F2] text-[#DC2626]' :
+                        p.estado === 'VENDIDO CADUCADO' ? 'bg-[#D1FAE5] text-[#10B981]' :
                         p.estado === 'ROTO' ? 'bg-[#FEF3C7] text-[#D97706]' :
                         p.estado === 'VENDIDO' ? 'bg-[#F1F5F9] text-[#475569]' :
                         p.estado === 'MOVIDO' ? 'bg-[#E0E7FF] text-[#4F46E5]' :
