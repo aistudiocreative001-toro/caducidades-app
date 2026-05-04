@@ -393,18 +393,17 @@ export default function AdminPageClient() {
                     <td className="px-2 py-1.5 text-center">
                       <div className="flex items-center justify-center gap-2">
                         {p.observaciones && p.observaciones.trim() !== '' && p.observaciones !== '#N/A' ? (
-                          <span className="relative group cursor-help">
+                          <span className="cursor-help" title={p.observaciones}>
                             <svg className="w-4 h-4 text-[#1565C0]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
-                            <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-48 bg-[#0F172A] text-white text-xs rounded-lg px-3 py-2 z-50">
-                              {p.observaciones}
-                            </span>
                           </span>
                         ) : (
-                          <svg className="w-4 h-4 text-[#CBD5E1]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
+                          <span title="Sin observaciones">
+                            <svg className="w-4 h-4 text-[#CBD5E1]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                          </span>
                         )}
                         <button onClick={() => openEdit(p)} className="text-[#94A3B8] hover:text-[#1565C0] transition-colors"><Edit className="w-4 h-4" /></button>
                         <button onClick={() => handleDelete(p.id)} className="text-[#94A3B8] hover:text-[#DC2626] transition-colors"><Trash2 className="w-4 h-4" /></button>
