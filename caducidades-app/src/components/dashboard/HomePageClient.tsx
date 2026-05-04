@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import AppBar from '@/components/layout/AppBar';
 import TiendaCard from '@/components/tiendas/TiendaCard';
 import CaducadosModal from '@/components/caducados/CaducadosModal';
+import BackupModal from '@/components/backup/BackupModal';
 import { ToastContainer, useToast } from '@/components/ui/Toast';
 import { TIENDAS, type TiendaKey } from '@/types/product';
 import type { Product } from '@/types/product';
@@ -14,6 +15,7 @@ export default function HomePageClient() {
   const { toasts, addToast, removeToast } = useToast();
 
   const [dismissedCaducados, setDismissedCaducados] = useState(false);
+  const [showBackup, setShowBackup] = useState(false);
 
   const fetchProducts = async () => {
     try {
@@ -30,6 +32,25 @@ export default function HomePageClient() {
   useEffect(() => {
     fetchProducts();
   }, []);
+
+  // Trigger backup when products are loaded
+  useEffect(() => {
+    if (!loading && productos.length > 0) {
+      const hasSeenBackup = sessionStorage.getItem('cadfz_backup_seen');
+      if (!hasSeenBackup) {
+        setShowBackup(true);
+        fetch('/api/products/backup', { method: 'POST', cache: 'no-store' })
+          .then(r => r.json())
+          .then(d => console.log('[BACKUP]', d))
+          .catch(e => console.error('[BACKUP]', e));
+      }
+    }
+  }, [loading, productos.length]);
+
+  const handleBackupClose = () => {
+    setShowBackup(false);
+    sessionStorage.setItem('cadfz_backup_seen', 'true');
+  };
 
   const hoy = new Date().toISOString().split('T')[0];
   const estadosFijos = ['ROTO', 'VENDIDO', 'VENDIDO CADUCADO', 'REGALO CADUCADO', 'MOVIDO'];
@@ -89,6 +110,7 @@ export default function HomePageClient() {
         onAccept={handleCaducadosAccept}
         onDismiss={() => setDismissedCaducados(true)}
       />
+      <BackupModal open={showBackup} onClose={handleBackupClose} />
       <ToastContainer toasts={toasts} removeToast={removeToast} />
     </div>
   );

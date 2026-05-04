@@ -6,10 +6,11 @@ import { getProducts } from '@/app/actions/products';
 import AdminKpis from './AdminKpis';
 import AdminFilters from './AdminFilters';
 import ProductoDrawer from '@/components/productos/ProductoDrawer';
+import RestoreModal from '@/components/backup/RestoreModal';
 import { ToastContainer, useToast } from '@/components/ui/Toast';
 import { TIENDAS } from '@/types/product';
 import type { Product } from '@/types/product';
-import { Edit, Trash2, Download, Upload, Plus, AlertCircle, ArrowLeft, RotateCcw } from 'lucide-react';
+import { Edit, Trash2, Download, Upload, Plus, AlertCircle, ArrowLeft, RotateCcw, CloudDownload } from 'lucide-react';
 import Link from 'next/link';
 import Papa from 'papaparse';
 import { getEmojiCategoria } from '@/lib/emojis';
@@ -35,6 +36,7 @@ export default function AdminPageClient() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [showCaducadosHoy, setShowCaducadosHoy] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
+  const [showRestoreModal, setShowRestoreModal] = useState(false);
   const [resetPass, setResetPass] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -237,7 +239,7 @@ export default function AdminPageClient() {
       </header>
 
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-        <div className="flex flex-wrap gap-3 mb-6">
+          <div className="flex flex-wrap gap-3 mb-6">
           <button onClick={openCreate} className="inline-flex items-center gap-2 px-4 py-2 bg-[#1565C0] text-white rounded-lg text-sm font-medium hover:bg-[#0D47A1]">
             <Plus className="w-4 h-4" /> Nuevo Producto
           </button>
@@ -257,6 +259,12 @@ export default function AdminPageClient() {
             }`}
           >
             <AlertCircle className="w-4 h-4" /> Caducados a fecha ({caducadosHoy.length}) · {costeCaducadosHoy.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €
+          </button>
+          <button
+            onClick={() => setShowRestoreModal(true)}
+            className="inline-flex items-center gap-2 px-4 py-2 border border-[#E2E8F0] text-[#475569] rounded-lg text-sm font-medium hover:bg-[#F1F5F9]"
+          >
+            <CloudDownload className="w-4 h-4" /> Restablecer cambios
           </button>
           <button
             onClick={() => setShowResetModal(true)}
@@ -427,6 +435,11 @@ export default function AdminPageClient() {
         }}
       />
 
+      <RestoreModal
+        open={showRestoreModal}
+        onClose={() => setShowRestoreModal(false)}
+        onSuccess={() => { refetch(); addToast('Copia de seguridad restaurada correctamente'); }}
+      />
       <ToastContainer toasts={toasts} removeToast={removeToast} />
 
       {/* Modal Resetear BBDD */}

@@ -19,6 +19,15 @@ export default function AppBar({ showAdmin = false }: { showAdmin?: boolean }) {
           </div>
 
           <div className="flex items-center gap-2">
+            {showAdmin && (
+              <Link
+                href="/admin"
+                className="inline-flex items-center gap-2 px-3 py-2 border border-[#CBD5E1] rounded-lg text-sm font-medium text-[#475569] hover:bg-[#F1F5F9] transition-colors"
+              >
+                <Shield className="w-4 h-4" />
+                <span className="hidden sm:inline">Administración</span>
+              </Link>
+            )}
             <button
               onClick={() => setShowHelp(true)}
               className="inline-flex items-center gap-2 px-3 py-2 border border-[#CBD5E1] rounded-lg text-sm font-medium text-[#475569] hover:bg-[#F1F5F9] transition-colors"
@@ -36,16 +45,6 @@ export default function AppBar({ showAdmin = false }: { showAdmin?: boolean }) {
               <Info className="w-4 h-4" />
               <span className="hidden sm:inline">Información</span>
             </button>
-
-            {showAdmin && (
-              <Link
-                href="/admin"
-                className="inline-flex items-center gap-2 px-4 py-2 border border-[#CBD5E1] rounded-lg text-sm font-medium text-[#475569] hover:bg-[#F1F5F9] transition-colors"
-              >
-                <Shield className="w-4 h-4" />
-                Administración
-              </Link>
-            )}
           </div>
         </div>
       </header>
@@ -69,13 +68,13 @@ export default function AppBar({ showAdmin = false }: { showAdmin?: boolean }) {
               </button>
             </div>
             <div className="flex-1 overflow-y-auto p-6 space-y-6">
-              <section>
+                <section>
                 <h3 className="font-bold text-[#0F172A] mb-2 flex items-center gap-2">
                   <span className="w-6 h-6 rounded-full bg-[#1565C0] text-white text-xs flex items-center justify-center">1</span>
                   Importar productos (primera vez)
                 </h3>
                 <p className="text-sm text-[#475569] leading-relaxed">
-                  Ve al panel <strong>Administración</strong> → haz clic en <strong>Importar CSV</strong>. Selecciona el fichero exportado desde Excel. El formato debe usar <strong>punto y coma (;)</strong> como separador y guardar los números con coma decimal (ej: <em>35,44</em>). Se recomienda usar primero el botón <strong>Exportar Excel</strong> como plantilla base.
+                  Ve al panel <strong>Administración</strong> → haz clic en <strong>Exportar Excel</strong> para descargar la plantilla con los datos actuales. Edítala, completa los campos necesarios (usa punto y coma como separador y coma decimal para números) y vuelve a importar con <strong>Importar CSV</strong>. Los datos originales provienen del Drive de FitnessZone.
                 </p>
               </section>
 
@@ -95,7 +94,7 @@ export default function AppBar({ showAdmin = false }: { showAdmin?: boolean }) {
                   Ver productos de una tienda
                 </h3>
                 <p className="text-sm text-[#475569] leading-relaxed">
-                  Haz clic en cualquier tarjeta de tienda. Verás dos modos: <strong>Venta Recomendada</strong> (filtra solo los que tienen pocos días o están caducados) y <strong>Ver Todos</strong>. Desde aquí puedes marcar productos como vendidos o moverlos entre tiendas.
+                  Haz clic en cualquier tarjeta de tienda. Verás dos modos: <strong>Venta Recomendada</strong> (filtra solo los que tienen pocos días para vender urgentemente) y <strong>Ver Todos</strong>. Desde aquí puedes marcar productos como vendidos.
                 </p>
               </section>
 
@@ -105,7 +104,7 @@ export default function AppBar({ showAdmin = false }: { showAdmin?: boolean }) {
                   Estados y colores
                 </h3>
                 <p className="text-sm text-[#475569] leading-relaxed">
-                  Cada producto tiene un <strong>estado</strong> que puedes cambiar manualmente: Azul (Vigente), Naranja (En Riesgo), Rojo (Caducado), Verde (Vendido), etc. El estado <strong>nunca cambia automáticamente</strong> por la fecha.
+                  Cada producto tiene un <strong>estado</strong> que puedes cambiar manualmente: Azul (Vigente), Naranja (En Riesgo), Rojo (Caducado), Verde (Vendido), etc. También puedes marcar productos como <strong>CADUCADO automáticamente</strong> desde el popup que aparece al entrar (detecta las fechas pasadas).
                 </p>
               </section>
 
@@ -115,23 +114,33 @@ export default function AppBar({ showAdmin = false }: { showAdmin?: boolean }) {
                   Mover productos
                 </h3>
                 <p className="text-sm text-[#475569] leading-relaxed">
-                  En la vista de tienda, haz clic en <strong>Mover</strong> sobre un producto. Se abrirá un desplegable donde puedes elegir la tienda destino y las unidades a trasladar. Si mueves todas las unidades desde Almacén, el producto original se elimina.
+                  Sólo para productos del <strong>Almacén</strong>. Haz clic en <strong>Mover</strong> sobre un producto. Se abrirá un desplegable donde puedes elegir la tienda destino y las unidades a trasladar. Si mueves todas las unidades desde Almacén, el producto original se elimina.
                 </p>
               </section>
 
               <section>
                 <h3 className="font-bold text-[#0F172A] mb-2 flex items-center gap-2">
                   <span className="w-6 h-6 rounded-full bg-[#1565C0] text-white text-xs flex items-center justify-center">6</span>
-                  Panel de Administración
+                  Copias de seguridad
                 </h3>
                 <p className="text-sm text-[#475569] leading-relaxed">
-                  Desde aquí puedes buscar, filtrar, editar, eliminar, importar y exportar productos. También verás el botón <strong>Caducados a fecha</strong>: en rojo significa que hay productos con fecha pasada sin marcar aún. El popup te permite marcarlos todos como Caducado o cancelarlo y gestionarlos uno a uno.
+                  Cada vez que entras a la app se crea una <strong>copia de seguridad automática</strong>. En Administración puedes pinchar <strong>Restablecer cambios</strong> para ver las últimas 10 copias y recuperar una versión anterior. Requiere contraseña.
                 </p>
               </section>
 
               <section>
                 <h3 className="font-bold text-[#0F172A] mb-2 flex items-center gap-2">
                   <span className="w-6 h-6 rounded-full bg-[#1565C0] text-white text-xs flex items-center justify-center">7</span>
+                  Panel de Administración
+                </h3>
+                <p className="text-sm text-[#475569] leading-relaxed">
+                  Desde aquí puedes buscar, filtrar, editar, eliminar, importar y exportar productos. También verás el botón <strong>Caducados a fecha</strong>: en rojo significa que hay productos con fecha pasada sin marcar aún. El popup del inicio te permite marcarlos todos como Caducado o cancelarlo y gestionarlos uno a uno.
+                </p>
+              </section>
+
+              <section>
+                <h3 className="font-bold text-[#0F172A] mb-2 flex items-center gap-2">
+                  <span className="w-6 h-6 rounded-full bg-[#1565C0] text-white text-xs flex items-center justify-center">8</span>
                   Resetear base de datos
                 </h3>
                 <p className="text-sm text-[#475569] leading-relaxed">
