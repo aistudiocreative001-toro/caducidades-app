@@ -173,15 +173,17 @@ function RangoPill({ emoji, label, sub, count, uds, coste, color, bg }: {
   emoji: string; label: string; sub: string; count: number; uds: number; coste: number; color: string; bg: string;
 }) {
   const esCero = count === 0;
+  const displayColor = esCero ? '#059669' : color;
+  const displayBg = esCero ? '#ECFDF5' : bg;
   return (
-    <div className="rounded-xl p-4 text-center" style={{ backgroundColor: bg }}>
-      <p className="text-xs font-semibold mb-0.5" style={{ color }}>
+    <div className="rounded-xl p-4 text-center" style={{ backgroundColor: displayBg }}>
+      <p className="text-xs font-semibold mb-0.5" style={{ color: displayColor }}>
         {emoji} {label}
       </p>
       <p className="text-xs mb-2" style={{ color: esCero ? undefined : '#94A3B8' }}>
         {esCero ? '🏆 Excelente' : sub}
       </p>
-      <p className="text-2xl font-bold" style={{ color }}>{count}</p>
+      <p className="text-2xl font-bold" style={{ color: displayColor }}>{count}</p>
       <p className="text-xs text-[#64748B]">
         {esCero ? '0 uds · 0,00 €' : `${uds} uds · ${fmtCoste(coste)} €`}
       </p>
