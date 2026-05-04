@@ -9,7 +9,7 @@ const geistSans = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "CadFZ - Caducidades Fitness Zone",
+  title: "Caducidades FitnessZone",
   description: "Gestión de caducidades de productos por tienda",
 };
 

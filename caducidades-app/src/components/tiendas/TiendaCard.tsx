@@ -79,7 +79,7 @@ function TiendaCard({ tiendaKey, nombre, color, productos }: TiendaCardProps) {
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -2, boxShadow: '0 8px 24px -4px rgba(0,0,0,0.08)' }}
       transition={{ duration: 0.3 }}
-      className="relative bg-white rounded-2xl border border-[#E2E8F0] shadow-sm overflow-hidden cursor-pointer"
+      className="relative self-start bg-white rounded-2xl border border-[#E2E8F0] shadow-sm overflow-hidden cursor-pointer"
     >
       <Link href={`/tienda/${encodeURIComponent(tiendaKey)}`} className="block">
         <div className="flex">

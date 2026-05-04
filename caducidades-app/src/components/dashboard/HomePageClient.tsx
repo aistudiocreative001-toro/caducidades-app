@@ -63,13 +63,13 @@ export default function HomePageClient() {
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-[#0F172A] mb-2">
-            Las Fitness Zones Caducidades
+            Caducidades
           </h1>
           <p className="text-[#64748B]">
             Selecciona una tienda para ver los productos
           </p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 items-start gap-6">
           {TIENDAS.map((tienda) => (
             <TiendaCard
               key={tienda.key}
