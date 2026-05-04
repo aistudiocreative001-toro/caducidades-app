@@ -25,7 +25,7 @@ const ESTADOS_OPCIONES = [
 const ESTADO_COLOR: Record<string, string> = {
   'CADUCADO': '#DC2626',
   'EN RIESGO': '#EA580C',
-  'VENDIDO CADUCADO': '#B91C1C',
+  'VENDIDO CADUCADO': '#10B981',
   'REGALO CADUCADO': '#D97706',
   'VENDIDO': '#047857',
   'ROTO': '#EF4444',

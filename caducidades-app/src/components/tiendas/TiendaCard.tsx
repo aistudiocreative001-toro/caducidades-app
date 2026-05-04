@@ -154,7 +154,7 @@ function TiendaCard({ tiendaKey, nombre, color, productos }: TiendaCardProps) {
           </p>
           <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
             <MiniPill emoji="🔴" label="Caducado" {...get('CADUCADO')} color="#DC2626" bg="#FEE2E2" />
-            <MiniPill emoji="💸" label="Vend. Cadu." {...get('VENDIDO CADUCADO')} color="#B91C1C" bg="#FEF2F2" />
+            <MiniPill emoji="💸" label="Vend. Cadu." {...get('VENDIDO CADUCADO')} color="#10B981" bg="#D1FAE5" />
             <MiniPill emoji="🎁" label="Regalo Cadu." {...get('REGALO CADUCADO')} color="#D97706" bg="#FFF7ED" />
             <MiniPill emoji="💰" label="Vendido" {...get('VENDIDO')} color="#047857" bg="#D1FAE5" />
             <MiniPill emoji="🗑️" label="Roto" {...get('ROTO')} color="#EF4444" bg="#FFF1F2" />

@@ -5,12 +5,12 @@ import type { Product } from '@/types/product';
 import { CheckCircle2, AlertTriangle, Clock, Trash2, ShoppingCart, Gift, Archive, BarChart3 } from 'lucide-react';
 
 const estadoConfig: Record<string, { label: string; color: string; bg: string; icon: React.ReactNode }> = {
-  VIGENTE: { label: 'VIGENTE', color: '#059669', bg: '#ECFDF5', icon: <CheckCircle2 className="w-4 h-4" /> },
+  VIGENTE: { label: 'VIGENTE', color: '#1565C0', bg: '#DBEAFE', icon: <CheckCircle2 className="w-4 h-4" /> },
   'EN RIESGO': { label: 'PRÓXIMO', color: '#EA580C', bg: '#FFF7ED', icon: <AlertTriangle className="w-4 h-4" /> },
   CADUCADO: { label: 'CADUCADO', color: '#DC2626', bg: '#FEF2F2', icon: <Clock className="w-4 h-4" /> },
   ROTO: { label: 'ROTO', color: '#D97706', bg: '#FEF3C7', icon: <Trash2 className="w-4 h-4" /> },
   VENDIDO: { label: 'VENDIDO', color: '#475569', bg: '#F1F5F9', icon: <ShoppingCart className="w-4 h-4" /> },
-  'VENDIDO CADUCADO': { label: 'VEND. CADU.', color: '#B91C1C', bg: '#FEE2E2', icon: <ShoppingCart className="w-4 h-4" /> },
+  'VENDIDO CADUCADO': { label: 'VEND. CADU.', color: '#10B981', bg: '#D1FAE5', icon: <ShoppingCart className="w-4 h-4" /> },
   'REGALO CADUCADO': { label: 'REGALO C.', color: '#BE185D', bg: '#FCE7F3', icon: <Gift className="w-4 h-4" /> },
   MOVIDO: { label: 'MOVIDO', color: '#4F46E5', bg: '#E0E7FF', icon: <Archive className="w-4 h-4" /> },
   MOSTRADOR: { label: 'MOSTRADOR', color: '#0284C7', bg: '#E0F2FE', icon: <BarChart3 className="w-4 h-4" /> },
