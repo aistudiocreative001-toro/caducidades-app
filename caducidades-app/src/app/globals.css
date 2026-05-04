@@ -1,0 +1,15 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-background: #F3F4F6;
+  --color-foreground: #0F172A;
+  --font-sans: var(--font-geist-sans);
+}
+
+@layer base {
+  body {
+    background: #F3F4F6;
+    color: #0F172A;
+    font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  }
+}
