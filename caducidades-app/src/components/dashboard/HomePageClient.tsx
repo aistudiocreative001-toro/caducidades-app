@@ -32,12 +32,12 @@ export default function HomePageClient() {
   const hoy = new Date().toISOString().split('T')[0];
   const estadosFijos = ['ROTO', 'VENDIDO', 'VENDIDO CADUCADO', 'REGALO CADUCADO', 'MOVIDO'];
   
-  // Productos cuya fecha ya pasó pero NO están marcados como CADUCADO
+  // Productos cuya fecha ya pasó pero NO están marcados como CADUCADO y tienen stock
   const caducadosHoy = productos.filter(p => {
     const fechaValida = p.fecha && p.fecha !== '' && p.fecha !== '#N/A';
     const yaCaducado = p.estado?.toUpperCase() === 'CADUCADO';
     const estadoFinal = estadosFijos.includes(p.estado?.toUpperCase() || '');
-    return fechaValida && p.fecha < hoy && !yaCaducado && !estadoFinal;
+    return fechaValida && p.fecha < hoy && !yaCaducado && !estadoFinal && p.uds > 0;
   });
 
   const handleCaducadosAccept = () => {

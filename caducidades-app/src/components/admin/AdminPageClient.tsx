@@ -66,7 +66,7 @@ export default function AdminPageClient() {
   const hoy = new Date().toISOString().split('T')[0];
   const caducadosHoy = useMemo(() => {
     const estadosFijos = ['ROTO', 'VENDIDO', 'VENDIDO CADUCADO', 'REGALO CADUCADO', 'MOVIDO'];
-    return productos.filter(p => p.fecha < hoy && !estadosFijos.includes(p.estado.toUpperCase()) && p.estado !== 'CADUCADO');
+    return productos.filter(p => p.fecha < hoy && !estadosFijos.includes(p.estado.toUpperCase()) && p.estado !== 'CADUCADO' && p.uds > 0);
   }, [productos]);
   const costeCaducadosHoy = caducadosHoy.reduce((s, p) => s + p.costeTotal, 0);
 
