@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Save, Trash2 } from 'lucide-react';
+import { X, Save, Trash2, ChevronDown } from 'lucide-react';
 import type { Product } from '@/types/product';
 import { TIENDAS, TIPOS_CATEGORIA } from '@/types/product';
 import { useToast } from '@/components/ui/Toast';
@@ -20,7 +20,11 @@ interface ProductoDrawerProps {
 export default function ProductoDrawer({ isOpen, onClose, producto, onSuccess }: ProductoDrawerProps) {
   const [loading, setLoading] = useState(false);
   const { addToast } = useToast();
-  
+  const [ubiOpen, setUbiOpen] = useState(false);
+  const [estadoOpen, setEstadoOpen] = useState(false);
+  const ubiRef = useRef<HTMLDivElement>(null);
+  const estadoRef = useRef<HTMLDivElement>(null);
+
   const [form, setForm] = useState({
     ubi: 'LR',
     codigo: '',
@@ -61,6 +65,16 @@ export default function ProductoDrawer({ isOpen, onClose, producto, onSuccess }:
       });
     }
   }, [producto, isOpen]);
+
+  // Cerrar dropdowns al hacer clic fuera
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (ubiRef.current && !ubiRef.current.contains(e.target as Node)) setUbiOpen(false);
+      if (estadoRef.current && !estadoRef.current.contains(e.target as Node)) setEstadoOpen(false);
+    };
+    window.addEventListener('mousedown', handleClick);
+    return () => window.removeEventListener('mousedown', handleClick);
+  }, []);
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -115,8 +129,11 @@ export default function ProductoDrawer({ isOpen, onClose, producto, onSuccess }:
     }
   };
 
-  const inputClass = "w-full px-3 py-2 border border-[#E2E8F0] rounded-lg text-sm focus:outline-none focus:border-[#1565C0] focus:ring-2 focus:ring-[#1565C0]/10";
+  const inputClass = "w-full px-3 py-2 border border-[#E2E8F0] rounded-lg text-sm focus:outline-none focus:border-[#1565C0] focus:ring-2 focus:ring-[#1565C0]/10 bg-white";
   const labelClass = "block text-sm font-medium text-[#64748B] mb-1";
+
+  const tiendaSeleccionada = TIENDAS.find(t => t.key === form.ubi);
+  const estadoStyle = getEstadoStyle(form.estado);
 
   return (
     <AnimatePresence>
@@ -142,11 +159,38 @@ export default function ProductoDrawer({ isOpen, onClose, producto, onSuccess }:
                 </div>
 
                 <div className="space-y-4">
-                  <div>
+                  {/* Ubicación dropdown personalizado */}
+                  <div ref={ubiRef}>
                     <label className={labelClass}>Ubicación</label>
-                    <select value={form.ubi} onChange={e => setForm({...form, ubi: e.target.value})} className={inputClass}>
-                      {TIENDAS.map(t => <option key={t.key} value={t.key}>{t.nombre} ({t.key})</option>)}
-                    </select>
+                    <button
+                      type="button"
+                      onClick={() => setUbiOpen(!ubiOpen)}
+                      className={`${inputClass} flex items-center gap-2 cursor-pointer`}
+                    >
+                      <span
+                        className="inline-block w-2.5 h-2.5 rounded-full shrink-0"
+                        style={{ backgroundColor: tiendaSeleccionada?.color || '#CBD5E1' }}
+                      />
+                      <span className="flex-1 text-left">{tiendaSeleccionada?.nombre || 'Seleccionar...'}</span>
+                      <ChevronDown className={`w-3 h-3 text-[#64748B] shrink-0 transition-transform ${ubiOpen ? 'rotate-180' : ''}`} />
+                    </button>
+                    {ubiOpen && (
+                      <div className="mt-1 bg-white border border-[#E2E8F0] rounded-lg shadow-lg w-full max-h-48 overflow-y-auto">
+                        {TIENDAS.map(t => (
+                          <div
+                            key={t.key}
+                            className={`flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-[#F1F5F9] text-sm ${form.ubi === t.key ? 'font-semibold bg-[#F0F9FF]' : ''}`}
+                            onClick={() => { setForm({ ...form, ubi: t.key }); setUbiOpen(false); }}
+                          >
+                            <span
+                              className="inline-block w-2.5 h-2.5 rounded-full shrink-0"
+                              style={{ backgroundColor: t.color }}
+                            />
+                            {t.nombre} ({t.key})
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
@@ -194,23 +238,41 @@ export default function ProductoDrawer({ isOpen, onClose, producto, onSuccess }:
                     <input type="date" value={form.fecha} onChange={e => setForm({...form, fecha: e.target.value})} className={inputClass} />
                   </div>
 
-                  <div>
+                  {/* Estado dropdown personalizado */}
+                  <div ref={estadoRef}>
                     <label className={labelClass}>Estado</label>
-                    <div className="relative">
-                      <select
-                        value={form.estado}
-                        onChange={e => setForm({...form, estado: e.target.value})}
-                        className={`${inputClass} pl-10`}
-                      >
-                        {ESTADOS_PREDEFINIDOS.map(e => (
-                          <option key={e} value={e}>{e}</option>
-                        ))}
-                      </select>
-                      <span 
-                        className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full"
-                        style={{ backgroundColor: getEstadoStyle(form.estado).color }}
+                    <button
+                      type="button"
+                      onClick={() => setEstadoOpen(!estadoOpen)}
+                      className={`${inputClass} flex items-center gap-2 cursor-pointer`}
+                    >
+                      <span
+                        className="inline-block w-2.5 h-2.5 rounded-full shrink-0"
+                        style={{ backgroundColor: estadoStyle.color }}
                       />
-                    </div>
+                      <span className="flex-1 text-left">{form.estado}</span>
+                      <ChevronDown className={`w-3 h-3 text-[#64748B] shrink-0 transition-transform ${estadoOpen ? 'rotate-180' : ''}`} />
+                    </button>
+                    {estadoOpen && (
+                      <div className="mt-1 bg-white border border-[#E2E8F0] rounded-lg shadow-lg w-full max-h-64 overflow-y-auto">
+                        {ESTADOS_PREDEFINIDOS.map(e => {
+                          const style = getEstadoStyle(e);
+                          return (
+                            <div
+                              key={e}
+                              className={`flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-[#F1F5F9] text-sm ${form.estado === e ? 'font-semibold bg-[#F0F9FF]' : ''}`}
+                              onClick={() => { setForm({ ...form, estado: e }); setEstadoOpen(false); }}
+                            >
+                              <span
+                                className="inline-block w-2.5 h-2.5 rounded-full shrink-0"
+                                style={{ backgroundColor: style.color }}
+                              />
+                              <span style={{ color: style.color }}>{e}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
 
                   <div>
