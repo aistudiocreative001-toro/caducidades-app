@@ -110,7 +110,10 @@ export default function CategoriaCard({
 
   const totalMovido = Object.values(moverDestinos).reduce((s, v) => s + (v || 0), 0);
 
-  const borderColor = esAlmacen ? urgenciaColor : colorTienda;
+  // Fondo rojo cuando el producto tiene pocos días (< 60) y fecha válida
+  const esCritico = p.dias != null && p.dias !== -9999 && p.dias < 60;
+  const cardBgColor = esCritico ? '#FEF2F2' : '#FFFFFF';
+  const borderTopColor = esCritico ? '#DC2626' : (esAlmacen ? urgenciaColor : colorTienda);
 
   return (
     <>
@@ -119,9 +122,10 @@ export default function CategoriaCard({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="bg-white rounded-xl border border-[#E2E8F0] shadow-sm overflow-hidden"
+        className="rounded-xl border border-[#E2E8F0] shadow-sm overflow-hidden"
+        style={{ backgroundColor: cardBgColor }}
       >
-        <div className="h-1.5" style={{ backgroundColor: borderColor }} />
+        <div className="h-1.5" style={{ backgroundColor: borderTopColor }} />
         <div className="p-5">
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-bold text-[#0F172A] truncate">
