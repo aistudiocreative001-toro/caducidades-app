@@ -7,15 +7,15 @@ import { CheckCircle2, AlertTriangle, Clock, Trash2, ShoppingCart, Gift, Archive
 import { getEstadoStyle } from '@/lib/estado-colors';
 
 const estadoConfig: Record<string, { label: string; icon: React.ReactNode }> = {
-  VIGENTE: { label: 'VIGENTE', icon: <CheckCircle2 className="w-4 h-4" /> },
-  'EN RIESGO': { label: 'PRÓXIMO', icon: <AlertTriangle className="w-4 h-4" /> },
-  CADUCADO: { label: 'CADUCADO', icon: <Clock className="w-4 h-4" /> },
-  ROTO: { label: 'ROTO', icon: <Trash2 className="w-4 h-4" /> },
-  VENDIDO: { label: 'VENDIDO', icon: <ShoppingCart className="w-4 h-4" /> },
-  'VENDIDO CADUCADO': { label: 'VEND. CADU.', icon: <ShoppingCart className="w-4 h-4" /> },
-  'REGALO CADUCADO': { label: 'REGALO C.', icon: <Gift className="w-4 h-4" /> },
-  MOVIDO: { label: 'MOVIDO', icon: <Archive className="w-4 h-4" /> },
-  MOSTRADOR: { label: 'MOSTRADOR', icon: <BarChart3 className="w-4 h-4" /> },
+  VIGENTE:             { label: 'VIGENTE',             icon: <CheckCircle2 className="w-4 h-4" /> },
+  'EN RIESGO':         { label: 'EN RIESGO',           icon: <AlertTriangle className="w-4 h-4" /> },
+  CADUCADO:            { label: 'CADUCADO',            icon: <Clock className="w-4 h-4" /> },
+  ROTO:                { label: 'ROTO',                icon: <Trash2 className="w-4 h-4" /> },
+  VENDIDO:             { label: 'VENDIDO',             icon: <ShoppingCart className="w-4 h-4" /> },
+  'VENDIDO CADUCADO':  { label: 'VEND. CADU.',         icon: <ShoppingCart className="w-4 h-4" /> },
+  'REGALO CADUCADO':   { label: 'REGALO CADU.',        icon: <Gift className="w-4 h-4" /> },
+  MOVIDO:              { label: 'MOVIDO',              icon: <Archive className="w-4 h-4" /> },
+  MOSTRADOR:           { label: 'MOSTRADOR',           icon: <BarChart3 className="w-4 h-4" /> },
 };
 
 interface AdminKpisProps {
@@ -26,6 +26,8 @@ export default function AdminKpis({ productos }: AdminKpisProps) {
   // Agrupar por estado
   const porEstado: Record<string, Product[]> = {};
   for (const p of productos) {
+    // Ignorar estados basura
+    if (p.estado === '#N/A' || !p.estado || p.estado.trim() === '') continue;
     if (!porEstado[p.estado]) porEstado[p.estado] = [];
     porEstado[p.estado].push(p);
   }

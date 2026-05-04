@@ -444,5 +444,3 @@ export default function AdminPageClient() {
     </div>
   );
 }
-
-export default AdminPageClient;
