@@ -5,6 +5,7 @@ import { AlertTriangle, Package, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Product } from '@/types/product';
 import { TIENDAS } from '@/types/product';
+import { getEstadoStyle } from '@/lib/estado-colors';
 
 interface CaducadosModalProps {
   productos: Product[];
@@ -18,12 +19,23 @@ const fmtMoney = (n: number) =>
 export default function CaducadosModal({ productos, onAccept, onDismiss }: CaducadosModalProps) {
   const [loading, setLoading] = useState(false);
   const [dimissed, setDimissed] = useState(false);
+  const [needsPassword, setNeedsPassword] = useState(false);
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
 
   const totalCoste = productos.reduce((sum, p) => sum + p.costeTotal, 0);
 
   if (productos.length === 0 || dimissed) return null;
 
   const handleAccept = async () => {
+    if (!needsPassword) {
+      setNeedsPassword(true);
+      return;
+    }
+    if (password !== 'admin') {
+      setError('Contraseña incorrecta');
+      return;
+    }
     setLoading(true);
     try {
       const ids = productos.map((p) => p.id);
@@ -108,12 +120,17 @@ export default function CaducadosModal({ productos, onAccept, onDismiss }: Caduc
                       <span className="text-[10px] font-bold text-[#475569]">{p.ubi}</span>
                     </div>
 
-                    {/* Info */}
+                    <!-- Info -->
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-semibold text-[#0F172A] truncate">
                         {p.producto || p.observaciones || '(Sin nombre)'}
                       </p>
                       <div className="flex flex-wrap items-center gap-x-4 gap-y-0.5 mt-1 text-xs text-[#64748B]">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium"
+                          style={{ backgroundColor: getEstadoStyle(p.estado).bg, color: getEstadoStyle(p.estado).color }}
+                        >
+                          {p.estado}
+                        </span>
                         <span>
                           <span className="text-[#94A3B8]">Fecha:</span>{' '}
                           <span className="font-medium text-[#475569]">{p.fecha}</span>
@@ -151,24 +168,56 @@ export default function CaducadosModal({ productos, onAccept, onDismiss }: Caduc
             {/* Footer */}
             <div className="p-4 sm:p-6 border-t border-[#E2E8F0] bg-[#FAFAFA]">
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                <p className="text-xs text-[#64748B]">
+                <p className="text-xs text-[#64748B] shrink-0">
                   Se marcarán como <span className="font-semibold text-[#DC2626]">CADUCADO</span>
                 </p>
                 <div className="flex items-center gap-3">
-                  <button
-                    onClick={handleDismiss}
-                    disabled={loading}
-                    className="px-5 py-2.5 border border-[#E2E8F0] text-[#475569] rounded-xl text-sm font-medium hover:bg-[#F1F5F9] disabled:opacity-50 transition-colors flex items-center gap-2"
-                  >
-                    <X className="w-4 h-4" /> Cancelar y corregiré manualmente
-                  </button>
-                  <button
-                    onClick={handleAccept}
-                    disabled={loading}
-                    className="px-6 py-2.5 bg-[#DC2626] text-white rounded-xl text-sm font-semibold hover:bg-[#B91C1C] disabled:opacity-50 transition-colors shadow-sm"
-                  >
-                    {loading ? 'Guardando…' : '✅ Aceptar y continuar'}
-                  </button>
+                  {!needsPassword ? (
+                    <>
+                      <button
+                        onClick={handleDismiss}
+                        disabled={loading}
+                        className="px-5 py-2.5 border border-[#E2E8F0] text-[#475569] rounded-xl text-sm font-medium hover:bg-[#F1F5F9] disabled:opacity-50 transition-colors flex items-center gap-2"
+                      >
+                        <X className="w-4 h-4" /> Cancelar y corregiré manualmente
+                      </button>
+                      <button
+                        onClick={handleAccept}
+                        disabled={loading}
+                        className="px-6 py-2.5 bg-[#DC2626] text-white rounded-xl text-sm font-semibold hover:bg-[#B91C1C] disabled:opacity-50 transition-colors shadow-sm"
+                      >
+                        {loading ? 'Guardando…' : '✅ Aceptar y continuar'}
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="password"
+                          value={password}
+                          onChange={(e) => { setPassword(e.target.value); setError(''); }}
+                          placeholder="Contraseña admin"
+                          className="px-3 py-2 border border-[#E2E8F0] rounded-lg text-sm focus:outline-none focus:border-[#1565C0]"
+                          onKeyDown={(e) => { if (e.key === 'Enter') handleAccept(); }}
+                        />
+                        <button
+                          onClick={handleAccept}
+                          disabled={loading || !password}
+                          className="px-5 py-2.5 bg-[#DC2626] text-white rounded-xl text-sm font-semibold hover:bg-[#B91C1C] disabled:opacity-50 transition-colors shadow-sm"
+                        >
+                          {loading ? 'Guardando…' : '✅ Confirmar'}
+                        </button>
+                        <button
+                          onClick={() => { setNeedsPassword(false); setPassword(''); setError(''); }}
+                          disabled={loading}
+                          className="px-4 py-2.5 border border-[#E2E8F0] text-[#475569] rounded-xl text-sm font-medium hover:bg-[#F1F5F9]"
+                        >
+                          Volver
+                        </button>
+                      </div>
+                      {error && <p className="text-xs text-[#DC2626]">{error}</p>}
+                    </>
+                  )}
                 </div>
               </div>
             </div>
