@@ -6,15 +6,16 @@ import { X, Save, Trash2 } from 'lucide-react';
 import type { Product } from '@/types/product';
 import { TIENDAS, TIPOS_CATEGORIA } from '@/types/product';
 import { useToast } from '@/components/ui/Toast';
+import { getEstadoStyle } from '@/lib/estado-colors';
+
+const ESTADOS_PREDEFINIDOS = ['VIGENTE', 'EN RIESGO', 'CADUCADO', 'ROTO', 'VENDIDO', 'VENDIDO CADUCADO', 'REGALO CADUCADO', 'MOVIDO', 'MOSTRADOR'];
 
 interface ProductoDrawerProps {
   isOpen: boolean;
   onClose: () => void;
-  producto: Product | null; // null = crear nuevo
+  producto: Product | null;
   onSuccess: () => void;
 }
-
-const ESTADOS_PREDEFINIDOS = ['VIGENTE', 'EN RIESGO', 'CADUCADO', 'ROTO', 'VENDIDO', 'VENDIDO CADUCADO', 'REGALO CADUCADO', 'MOVIDO', 'MOSTRADOR'];
 
 export default function ProductoDrawer({ isOpen, onClose, producto, onSuccess }: ProductoDrawerProps) {
   const [loading, setLoading] = useState(false);
@@ -195,16 +196,21 @@ export default function ProductoDrawer({ isOpen, onClose, producto, onSuccess }:
 
                   <div>
                     <label className={labelClass}>Estado</label>
-                    <input 
-                      list="estados" 
-                      value={form.estado} 
-                      onChange={e => setForm({...form, estado: e.target.value})} 
-                      className={inputClass} 
-                      placeholder="Selecciona o escribe estado"
-                    />
-                    <datalist id="estados">
-                      {ESTADOS_PREDEFINIDOS.map(e => <option key={e} value={e} />)}
-                    </datalist>
+                    <div className="relative">
+                      <select
+                        value={form.estado}
+                        onChange={e => setForm({...form, estado: e.target.value})}
+                        className={`${inputClass} pl-10`}
+                      >
+                        {ESTADOS_PREDEFINIDOS.map(e => (
+                          <option key={e} value={e}>{e}</option>
+                        ))}
+                      </select>
+                      <span 
+                        className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full"
+                        style={{ backgroundColor: getEstadoStyle(form.estado).color }}
+                      />
+                    </div>
                   </div>
 
                   <div>
