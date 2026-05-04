@@ -172,20 +172,19 @@ function TiendaCard({ tiendaKey, nombre, color, productos }: TiendaCardProps) {
 function RangoPill({ emoji, label, sub, count, uds, coste, color, bg }: {
   emoji: string; label: string; sub: string; count: number; uds: number; coste: number; color: string; bg: string;
 }) {
-  if (count === 0) return (
-    <div className="rounded-xl p-4 bg-[#F8FAFC] text-center">
-      <p className="text-xs text-[#94A3B8] mb-1">{emoji} {label}</p>
-      <p className="text-sm text-[#94A3B8]">Sin productos</p>
-    </div>
-  );
+  const esCero = count === 0;
   return (
     <div className="rounded-xl p-4 text-center" style={{ backgroundColor: bg }}>
       <p className="text-xs font-semibold mb-0.5" style={{ color }}>
         {emoji} {label}
       </p>
-      <p className="text-xs text-[#94A3B8] mb-2">{sub}</p>
+      <p className="text-xs mb-2" style={{ color: esCero ? undefined : '#94A3B8' }}>
+        {esCero ? '🏆 Excelente' : sub}
+      </p>
       <p className="text-2xl font-bold" style={{ color }}>{count}</p>
-      <p className="text-xs text-[#64748B]">{uds} uds · {fmtCoste(coste)} €</p>
+      <p className="text-xs text-[#64748B]">
+        {esCero ? '0 uds · 0,00 €' : `${uds} uds · ${fmtCoste(coste)} €`}
+      </p>
     </div>
   );
 }
