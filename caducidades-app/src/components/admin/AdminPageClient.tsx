@@ -9,7 +9,7 @@ import ProductoDrawer from '@/components/productos/ProductoDrawer';
 import { ToastContainer, useToast } from '@/components/ui/Toast';
 import { TIENDAS } from '@/types/product';
 import type { Product } from '@/types/product';
-import { Edit, Trash2, Download, Upload, Plus, AlertCircle, ArrowLeft } from 'lucide-react';
+import { Edit, Trash2, Download, Upload, Plus, AlertCircle, ArrowLeft, RotateCcw } from 'lucide-react';
 import Link from 'next/link';
 import Papa from 'papaparse';
 import { getEmojiCategoria } from '@/lib/emojis';
@@ -34,7 +34,27 @@ export default function AdminPageClient() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [showCaducadosHoy, setShowCaducadosHoy] = useState(false);
+  const [showResetModal, setShowResetModal] = useState(false);
+  const [resetPass, setResetPass] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleResetDB = async () => {
+    try {
+      const res = await fetch('/api/products/reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: resetPass }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error');
+      refetch();
+      setShowResetModal(false);
+      setResetPass('');
+      addToast('Base de datos reseteada correctamente');
+    } catch (e) {
+      addToast(e instanceof Error ? e.message : 'Error al resetear', 'error');
+    }
+  };
 
   const filtrados = useMemo(() => {
     let res = [...productos];
@@ -197,9 +217,19 @@ export default function AdminPageClient() {
           </button>
           <button
             onClick={() => setShowCaducadosHoy(!showCaducadosHoy)}
-            className="inline-flex items-center gap-2 px-4 py-2 border border-[#FEF2F2] bg-[#FEF2F2] rounded-lg text-sm font-medium text-[#DC2626] hover:bg-[#FEE2E2]"
+            className={`inline-flex items-center gap-2 px-4 py-2 border rounded-lg text-sm font-medium ${
+              caducadosHoy.length > 0
+                ? 'border-[#FEF2F2] bg-[#FEF2F2] text-[#DC2626] hover:bg-[#FEE2E2]'
+                : 'border-[#D1FAE5] bg-[#ECFDF5] text-[#059669] hover:bg-[#D1FAE5]'
+            }`}
           >
             <AlertCircle className="w-4 h-4" /> Caducados a fecha ({caducadosHoy.length}) · {costeCaducadosHoy.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €
+          </button>
+          <button
+            onClick={() => setShowResetModal(true)}
+            className="inline-flex items-center gap-2 px-4 py-2 border border-[#FEE2E2] text-[#DC2626] rounded-lg text-sm font-medium hover:bg-[#FEF2F2]"
+          >
+            <RotateCcw className="w-4 h-4" /> Resetear BBDD
           </button>
         </div>
 
@@ -366,6 +396,53 @@ export default function AdminPageClient() {
       />
 
       <ToastContainer toasts={toasts} removeToast={removeToast} />
+
+      {/* Modal Resetear BBDD */}
+      {showResetModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setShowResetModal(false)} />
+          <div className="relative bg-white rounded-2xl shadow-xl max-w-sm w-full p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-[#FEE2E2] flex items-center justify-center">
+                <RotateCcw className="w-5 h-5 text-[#DC2626]" />
+              </div>
+              <div>
+                <h3 className="font-bold text-[#0F172A]">Resetear Base de Datos</h3>
+                <p className="text-sm text-[#64748B]">Se eliminarán todos los productos</p>
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-[#64748B] mb-1">Contraseña</label>
+              <input
+                type="password"
+                value={resetPass}
+                onChange={(e) => setResetPass(e.target.value)}
+                placeholder="Introduce la contraseña..."
+                className="w-full px-3 py-2 border border-[#E2E8F0] rounded-lg text-sm focus:outline-none focus:border-[#1565C0]"
+              />
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => { setShowResetModal(false); setResetPass(''); }}
+                className="flex-1 px-4 py-2 border border-[#E2E8F0] rounded-lg text-sm font-medium text-[#64748B] hover:bg-[#F1F5F9]"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleResetDB}
+                disabled={resetPass !== 'admin'}
+                className="flex-1 px-4 py-2 bg-[#DC2626] text-white rounded-lg text-sm font-medium hover:bg-[#B91C1C] disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Confirmar Reset
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
+export default AdminPageClient;

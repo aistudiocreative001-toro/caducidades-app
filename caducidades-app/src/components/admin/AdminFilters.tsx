@@ -30,9 +30,11 @@ export default function AdminFilters({
   estado, onEstadoChange,
   rangoDias, onRangoDiasChange,
 }: AdminFiltersProps) {
-  const [open, setOpen] = useState(false);
-  const selectedLabel = estado || 'Todos los estados';
-  const selectedColor = estado ? getEstadoStyle(estado).color : '#64748B';
+  const [estadoOpen, setEstadoOpen] = useState(false);
+  const [tiendaOpen, setTiendaOpen] = useState(false);
+  const tiendaSeleccionada = TIENDAS.find(t => t.key === tienda);
+  const estadoLabel = estado || 'Todos los estados';
+  const estadoColor = estado ? getEstadoStyle(estado).color : '#64748B';
 
   return (
     <div className="space-y-3 mb-4">
@@ -48,18 +50,49 @@ export default function AdminFilters({
       </div>
 
       <div className="flex flex-wrap gap-3">
-        <div className="flex items-center gap-2">
+        {/* Custom Tienda dropdown with colors */}
+        <div className="flex items-center gap-2 relative">
           <MapPin className="w-4 h-4 text-[#64748B]" />
-          <select
-            value={tienda}
-            onChange={(e) => onTiendaChange(e.target.value)}
-            className="px-3 py-2 border border-[#E2E8F0] rounded-lg text-sm focus:outline-none focus:border-[#1565C0]"
-          >
-            <option value="">Todas las tiendas</option>
-            {TIENDAS.map(t => (
-              <option key={t.key} value={t.key}>{t.nombre} ({t.key})</option>
-            ))}
-          </select>
+          <div className="relative">
+            <button
+              onClick={() => setTiendaOpen(!tiendaOpen)}
+              className="flex items-center gap-2 px-3 py-2 border border-[#E2E8F0] rounded-lg text-sm focus:outline-none focus:border-[#1565C0] bg-white min-w-[180px]"
+            >
+              <span
+                className="inline-block w-2.5 h-2.5 rounded-full shrink-0"
+                style={{ backgroundColor: tiendaSeleccionada?.color || '#CBD5E1' }}
+              />
+              <span className="flex-1 text-left truncate">{tiendaSeleccionada?.nombre || 'Todas las tiendas'}</span>
+              <svg className="w-3 h-3 text-[#64748B] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            {tiendaOpen && (
+              <div className="absolute z-50 mt-1 bg-white border border-[#E2E8F0] rounded-lg shadow-lg w-full min-w-[220px] max-h-64 overflow-y-auto">
+                <div
+                  className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-[#F1F5F9] text-sm text-[#64748B] border-b border-[#E2E8F0]"
+                  onClick={() => { onTiendaChange(''); setTiendaOpen(false); }}
+                >
+                  <span className="w-2.5 h-2.5 rounded-full shrink-0 bg-[#CBD5E1]" />
+                  Todas las tiendas
+                </div>
+                {TIENDAS.map(t => (
+                  <div
+                    key={t.key}
+                    className={`flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-[#F1F5F9] text-sm ${tienda === t.key ? 'font-semibold bg-[#F0F9FF]' : ''}`}
+                    onClick={() => { onTiendaChange(t.key); setTiendaOpen(false); }}
+                  >
+                    <span
+                      className="inline-block w-2.5 h-2.5 rounded-full shrink-0"
+                      style={{ backgroundColor: t.color }}
+                    />
+                    {t.nombre}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="flex items-center gap-2">
@@ -81,24 +114,24 @@ export default function AdminFilters({
           <Tag className="w-4 h-4 text-[#64748B]" />
           <div className="relative">
             <button
-              onClick={() => setOpen(!open)}
+              onClick={() => setEstadoOpen(!estadoOpen)}
               className="flex items-center gap-2 px-3 py-2 border border-[#E2E8F0] rounded-lg text-sm focus:outline-none focus:border-[#1565C0] bg-white min-w-[180px]"
             >
               <span
                 className="inline-block w-2.5 h-2.5 rounded-full shrink-0"
-                style={{ backgroundColor: selectedColor }}
+                style={{ backgroundColor: estadoColor }}
               />
-              <span className="flex-1 text-left truncate">{selectedLabel}</span>
+              <span className="flex-1 text-left truncate">{estadoLabel}</span>
               <svg className="w-3 h-3 text-[#64748B] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </button>
 
-            {open && (
+            {estadoOpen && (
               <div className="absolute z-50 mt-1 bg-white border border-[#E2E8F0] rounded-lg shadow-lg w-full min-w-[220px] max-h-64 overflow-y-auto">
                 <div
                   className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-[#F1F5F9] text-sm text-[#64748B] border-b border-[#E2E8F0]"
-                  onClick={() => { onEstadoChange(''); setOpen(false); }}
+                  onClick={() => { onEstadoChange(''); setEstadoOpen(false); }}
                 >
                   <span className="w-2.5 h-2.5 rounded-full shrink-0 bg-[#CBD5E1]" />
                   Todos los estados
@@ -107,7 +140,7 @@ export default function AdminFilters({
                   <div
                     key={e}
                     className={`flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-[#F1F5F9] text-sm ${estado === e ? 'font-semibold bg-[#F0F9FF]' : ''}`}
-                    onClick={() => { onEstadoChange(e); setOpen(false); }}
+                    onClick={() => { onEstadoChange(e); setEstadoOpen(false); }}
                   >
                     <span
                       className="inline-block w-2.5 h-2.5 rounded-full shrink-0"
