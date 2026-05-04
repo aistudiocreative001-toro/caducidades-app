@@ -108,10 +108,11 @@ export default function ProductoCard({
   // Si marca es #N/A o vacío, mostrar observaciones en su lugar
   const marcaDisplay = isNA(p.marca) && p.observaciones ? p.observaciones : p.marca;
 
-  // Fondo rojo suave si el producto tiene menos de 60 días para caducar
-  const cardBgColor = p.dias != null && p.dias < 60 ? '#FEF2F2' : '#FFFFFF';
+  // Fondo rojo cuando el producto tiene pocos días (< 60) y fecha válida
+  const esCritico = p.dias != null && p.dias !== -9999 && p.dias < 60;
+  const cardBgColor = esCritico ? '#FEF2F2' : '#FFFFFF';
+  const borderTopColor = esCritico ? '#DC2626' : (esAlmacen ? urgenciaColor : colorTienda);
   const totalMovido = Object.values(moverDestinos).reduce((s, v) => s + (v || 0), 0);
-  const borderColor = esAlmacen ? urgenciaColor : colorTienda;
 
   return (
     <>
@@ -124,7 +125,7 @@ export default function ProductoCard({
         style={{ backgroundColor: cardBgColor }}
       >
         {/* Top accent bar */}
-        <div className="h-1.5" style={{ backgroundColor: borderColor }} />
+        <div className="h-1.5" style={{ backgroundColor: borderTopColor }} />
 
         <div className="p-4 flex flex-col flex-1">
           {/* Header: Categoría + Estado */}

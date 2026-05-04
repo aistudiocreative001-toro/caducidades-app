@@ -198,9 +198,18 @@ export default function CategoriaCard({
                 {loading ? '...' : 'Vender'}
               </button>
             </div>
-          ) : (
+          )           : (
             <button
-              onClick={() => setShowMoverModal(true)}
+              onClick={() => {
+                const base = Math.floor(p.uds / 3);
+                const resto = p.uds % 3;
+                setMoverDestinos({
+                  LR: base + (resto >= 1 ? 1 : 0),
+                  '3C': base + (resto >= 2 ? 1 : 0),
+                  CL: base,
+                });
+                setShowMoverModal(true);
+              }}
               disabled={loading}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm font-medium disabled:opacity-50"
               style={{ backgroundColor: '#FB8C00' }}

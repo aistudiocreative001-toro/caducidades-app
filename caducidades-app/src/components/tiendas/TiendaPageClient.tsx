@@ -7,7 +7,8 @@ import CategoriaCardRecomendada from './CategoriaCardRecomendada';
 import { TIENDAS } from '@/types/product';
 import type { Product } from '@/types/product';
 import Link from 'next/link';
-import { ArrowLeft, LayoutGrid, Sparkles } from 'lucide-react';
+import { ArrowLeft, LayoutGrid, Sparkles, Printer } from 'lucide-react';
+import { generarPDFVentaRecomendada } from '@/lib/pdf';
 
 interface TiendaPageClientProps {
   ubi: string;
@@ -111,6 +112,15 @@ export default function TiendaPageClient({ ubi }: TiendaPageClientProps) {
               <><Sparkles className="w-4 h-4" /> Venta recomendada</>
             )}
           </button>
+
+          {modoRecomendado && (
+            <button
+              onClick={() => generarPDFVentaRecomendada(categoriasRecomendadas, ubi)}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[#1565C0] text-sm font-medium text-[#1565C0] hover:bg-[#F0F9FF] transition-colors"
+            >
+              <Printer className="w-4 h-4" /> Imprimir listado
+            </button>
+          )}
         </div>
         
         {activos.length === 0 ? (
