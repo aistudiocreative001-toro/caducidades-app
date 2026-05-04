@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Search, MapPin, Package, CalendarDays, Tag } from 'lucide-react';
 import { TIENDAS, TIPOS_CATEGORIA } from '@/types/product';
 import { getEmojiCategoria } from '@/lib/emojis';
@@ -21,6 +22,18 @@ const ESTADOS_OPCIONES = [
   'VIGENTE', 'EN RIESGO', 'CADUCADO', 'ROTO', 'VENDIDO', 'VENDIDO CADUCADO', 'REGALO CADUCADO', 'MOVIDO', 'MOSTRADOR'
 ];
 
+const ESTADO_COLOR: Record<string, string> = {
+  'CADUCADO': '#DC2626',
+  'EN RIESGO': '#EA580C',
+  'VENDIDO CADUCADO': '#B91C1C',
+  'REGALO CADUCADO': '#D97706',
+  'VENDIDO': '#047857',
+  'ROTO': '#EF4444',
+  'MOVIDO': '#4F46E5',
+  'MOSTRADOR': '#475569',
+  'VIGENTE': '#059669',
+};
+
 export default function AdminFilters({
   busqueda, onBusquedaChange,
   tienda, onTiendaChange,
@@ -28,6 +41,10 @@ export default function AdminFilters({
   estado, onEstadoChange,
   rangoDias, onRangoDiasChange,
 }: AdminFiltersProps) {
+  const [open, setOpen] = useState(false);
+  const selectedLabel = estado || 'Todos los estados';
+  const selectedColor = estado ? ESTADO_COLOR[estado] || '#64748B' : '#64748B';
+
   return (
     <div className="space-y-3 mb-4">
       <div className="flex items-center gap-2">
@@ -40,7 +57,7 @@ export default function AdminFilters({
           className="flex-1 px-3 py-2 border border-[#E2E8F0] rounded-lg text-sm focus:outline-none focus:border-[#1565C0] focus:ring-2 focus:ring-[#1565C0]/10"
         />
       </div>
-      
+
       <div className="flex flex-wrap gap-3">
         <div className="flex items-center gap-2">
           <MapPin className="w-4 h-4 text-[#64748B]" />
@@ -55,7 +72,7 @@ export default function AdminFilters({
             ))}
           </select>
         </div>
-        
+
         <div className="flex items-center gap-2">
           <Package className="w-4 h-4 text-[#64748B]" />
           <select
@@ -70,20 +87,51 @@ export default function AdminFilters({
           </select>
         </div>
 
-        <div className="flex items-center gap-2">
+        {/* Custom Estado dropdown with colors */}
+        <div className="flex items-center gap-2 relative">
           <Tag className="w-4 h-4 text-[#64748B]" />
-          <select
-            value={estado}
-            onChange={(e) => onEstadoChange(e.target.value)}
-            className="px-3 py-2 border border-[#E2E8F0] rounded-lg text-sm focus:outline-none focus:border-[#1565C0]"
-          >
-            <option value="">Todos los estados</option>
-            {ESTADOS_OPCIONES.map(e => (
-              <option key={e} value={e}>{e}</option>
-            ))}
-          </select>
+          <div className="relative">
+            <button
+              onClick={() => setOpen(!open)}
+              className="flex items-center gap-2 px-3 py-2 border border-[#E2E8F0] rounded-lg text-sm focus:outline-none focus:border-[#1565C0] bg-white min-w-[180px]"
+            >
+              <span
+                className="inline-block w-2.5 h-2.5 rounded-full shrink-0"
+                style={{ backgroundColor: selectedColor }}
+              />
+              <span className="flex-1 text-left truncate">{selectedLabel}</span>
+              <svg className="w-3 h-3 text-[#64748B] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            {open && (
+              <div className="absolute z-50 mt-1 bg-white border border-[#E2E8F0] rounded-lg shadow-lg w-full min-w-[220px] max-h-64 overflow-y-auto">
+                <div
+                  className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-[#F1F5F9] text-sm text-[#64748B] border-b border-[#E2E8F0]"
+                  onClick={() => { onEstadoChange(''); setOpen(false); }}
+                >
+                  <span className="w-2.5 h-2.5 rounded-full shrink-0 bg-[#CBD5E1]" />
+                  Todos los estados
+                </div>
+                {ESTADOS_OPCIONES.map(e => (
+                  <div
+                    key={e}
+                    className={`flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-[#F1F5F9] text-sm ${estado === e ? 'font-semibold bg-[#F0F9FF]' : ''}`}
+                    onClick={() => { onEstadoChange(e); setOpen(false); }}
+                  >
+                    <span
+                      className="inline-block w-2.5 h-2.5 rounded-full shrink-0"
+                      style={{ backgroundColor: ESTADO_COLOR[e] || '#CBD5E1' }}
+                    />
+                    <span style={{ color: ESTADO_COLOR[e] || '#0F172A' }}>{e}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
-        
+
         <div className="flex items-center gap-2">
           <CalendarDays className="w-4 h-4 text-[#64748B]" />
           <select
