@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Search, MapPin, Package, CalendarDays, Tag } from 'lucide-react';
 import { TIENDAS, TIPOS_CATEGORIA } from '@/types/product';
 import { getEmojiCategoria } from '@/lib/emojis';
+import { getEstadoStyle } from '@/lib/estado-colors';
 
 interface AdminFiltersProps {
   busqueda: string;
@@ -22,18 +23,6 @@ const ESTADOS_OPCIONES = [
   'VIGENTE', 'EN RIESGO', 'CADUCADO', 'ROTO', 'VENDIDO', 'VENDIDO CADUCADO', 'REGALO CADUCADO', 'MOVIDO', 'MOSTRADOR'
 ];
 
-const ESTADO_COLOR: Record<string, string> = {
-  'CADUCADO': '#DC2626',
-  'EN RIESGO': '#EA580C',
-  'VENDIDO CADUCADO': '#10B981',
-  'REGALO CADUCADO': '#D97706',
-  'VENDIDO': '#047857',
-  'ROTO': '#EF4444',
-  'MOVIDO': '#4F46E5',
-  'MOSTRADOR': '#475569',
-  'VIGENTE': '#1565C0',
-};
-
 export default function AdminFilters({
   busqueda, onBusquedaChange,
   tienda, onTiendaChange,
@@ -43,7 +32,7 @@ export default function AdminFilters({
 }: AdminFiltersProps) {
   const [open, setOpen] = useState(false);
   const selectedLabel = estado || 'Todos los estados';
-  const selectedColor = estado ? ESTADO_COLOR[estado] || '#64748B' : '#64748B';
+  const selectedColor = estado ? getEstadoStyle(estado).color : '#64748B';
 
   return (
     <div className="space-y-3 mb-4">
@@ -122,9 +111,9 @@ export default function AdminFilters({
                   >
                     <span
                       className="inline-block w-2.5 h-2.5 rounded-full shrink-0"
-                      style={{ backgroundColor: ESTADO_COLOR[e] || '#CBD5E1' }}
+                      style={{ backgroundColor: getEstadoStyle(e).color }}
                     />
-                    <span style={{ color: ESTADO_COLOR[e] || '#0F172A' }}>{e}</span>
+                    <span style={{ color: getEstadoStyle(e).color }}>{e}</span>
                   </div>
                 ))}
               </div>

@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Package, ChevronDown } from 'lucide-react';
 import { TIENDAS, type TiendaKey } from '@/types/product';
 import type { Product } from '@/types/product';
+import { getEstadoStyle } from '@/lib/estado-colors';
 
 interface TiendaCardProps {
   tiendaKey: TiendaKey;
@@ -153,14 +154,23 @@ function TiendaCard({ tiendaKey, nombre, color, productos }: TiendaCardProps) {
             Estados finales
           </p>
           <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
-            <MiniPill emoji="🔴" label="Caducado" {...get('CADUCADO')} color="#DC2626" bg="#FEE2E2" />
-            <MiniPill emoji="💸" label="Vend. Cadu." {...get('VENDIDO CADUCADO')} color="#10B981" bg="#D1FAE5" />
-            <MiniPill emoji="🎁" label="Regalo Cadu." {...get('REGALO CADUCADO')} color="#D97706" bg="#FFF7ED" />
-            <MiniPill emoji="💰" label="Vendido" {...get('VENDIDO')} color="#047857" bg="#D1FAE5" />
-            <MiniPill emoji="🗑️" label="Roto" {...get('ROTO')} color="#EF4444" bg="#FFF1F2" />
-            <MiniPill emoji="🚚" label="Movido" {...get('MOVIDO')} color="#4F46E5" bg="#E0E7FF" />
-            <MiniPill emoji="🪟" label="Mostrador" {...get('MOSTRADOR')} color="#475569" bg="#F1F5F9" />
-            <MiniPill emoji="❓" label="#N/A" {...get('#N/A')} color="#CBD5E1" bg="#F8FAFC" />
+            {(['CADUCADO','VENDIDO CADUCADO','REGALO CADUCADO','VENDIDO','ROTO','MOVIDO','MOSTRADOR','#N/A'] as const).map(est => {
+              const info = get(est);
+              if (info.count === 0) return null;
+              const estUpper = est === '#N/A' ? '' : est;
+              const s = estUpper ? getEstadoStyle(estUpper) : { color: '#CBD5E1', bg: '#F8FAFC' };
+              const emojis: Record<string, string> = {
+                CADUCADO: '🔴', 'VENDIDO CADUCADO': '💸', 'REGALO CADUCADO': '🎁',
+                VENDIDO: '💰', ROTO: '🗑️', MOVIDO: '🚚', MOSTRADOR: '🪟', '#N/A': '❓',
+              };
+              const labels: Record<string, string> = {
+                CADUCADO: 'Caducado', 'VENDIDO CADUCADO': 'Vend. Cadu.', 'REGALO CADUCADO': 'Regalo Cadu.',
+                VENDIDO: 'Vendido', ROTO: 'Roto', MOVIDO: 'Movido', MOSTRADOR: 'Mostrador', '#N/A': '#N/A',
+              };
+              return (
+                <MiniPill key={est} emoji={emojis[est]} label={labels[est]} {...info} color={s.color} bg={s.bg} />
+              );
+            })}
           </div>
         </motion.div>
       )}

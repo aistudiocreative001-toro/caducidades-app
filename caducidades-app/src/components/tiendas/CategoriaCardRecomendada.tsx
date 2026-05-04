@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { Truck, ShoppingCart, Minus, Plus } from 'lucide-react';
 import type { Product } from '@/types/product';
 import { getEmojiCategoria } from '@/lib/emojis';
+import { getEstadoStyle } from '@/lib/estado-colors';
 
 interface CategoriaCardProps {
   categoria: string;
@@ -48,7 +49,7 @@ export default function CategoriaCard({
       if (diasNum <= 60) return '#FFF7ED';
       return '#FEF3C7';
     }
-    return `${colorTienda}1A`;
+    return getEstadoStyle(p.estado).bg;
   };
 
   const getUrgenciaText = () => {
@@ -57,7 +58,7 @@ export default function CategoriaCard({
       if (diasNum <= 60) return '#EA580C';
       return '#D97706';
     }
-    return colorTienda;
+    return getEstadoStyle(p.estado).color;
   };
 
   // Helpers para fallback a observaciones cuando campos son #N/A o vacíos
