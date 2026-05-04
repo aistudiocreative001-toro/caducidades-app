@@ -13,6 +13,8 @@ export default function HomePageClient() {
   const [loading, setLoading] = useState(true);
   const { toasts, addToast, removeToast } = useToast();
 
+  const [dismissedCaducados, setDismissedCaducados] = useState(false);
+
   const fetchProducts = async () => {
     try {
       const res = await fetch('/api/products', { cache: 'no-store' });
@@ -43,6 +45,7 @@ export default function HomePageClient() {
   const handleCaducadosAccept = () => {
     // Refrescar datos para que el modal desaparezca
     fetchProducts();
+    setDismissedCaducados(true);
     addToast(`${caducadosHoy.length} productos marcados como CADUCADO`);
   };
 
@@ -84,6 +87,7 @@ export default function HomePageClient() {
       <CaducadosModal
         productos={caducadosHoy}
         onAccept={handleCaducadosAccept}
+        onDismiss={() => setDismissedCaducados(true)}
       />
       <ToastContainer toasts={toasts} removeToast={removeToast} />
     </div>

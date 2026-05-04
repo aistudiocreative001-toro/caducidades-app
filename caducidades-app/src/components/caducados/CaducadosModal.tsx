@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { AlertTriangle, Package } from 'lucide-react';
+import { AlertTriangle, Package, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Product } from '@/types/product';
 import { TIENDAS } from '@/types/product';
@@ -9,12 +9,13 @@ import { TIENDAS } from '@/types/product';
 interface CaducadosModalProps {
   productos: Product[];
   onAccept: () => void;
+  onDismiss: () => void;
 }
 
 const fmtMoney = (n: number) =>
   n.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-export default function CaducadosModal({ productos, onAccept }: CaducadosModalProps) {
+export default function CaducadosModal({ productos, onAccept, onDismiss }: CaducadosModalProps) {
   const [loading, setLoading] = useState(false);
   const [dimissed, setDimissed] = useState(false);
 
@@ -41,6 +42,11 @@ export default function CaducadosModal({ productos, onAccept }: CaducadosModalPr
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleDismiss = () => {
+    setDimissed(true);
+    onDismiss();
   };
 
   const tiendaColor = (ubi: string) => TIENDAS.find((t) => t.key === ubi)?.color || '#64748B';
@@ -144,17 +150,26 @@ export default function CaducadosModal({ productos, onAccept }: CaducadosModalPr
 
             {/* Footer */}
             <div className="p-4 sm:p-6 border-t border-[#E2E8F0] bg-[#FAFAFA]">
-              <div className="flex items-center justify-between gap-4">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                 <p className="text-xs text-[#64748B]">
                   Se marcarán como <span className="font-semibold text-[#DC2626]">CADUCADO</span>
                 </p>
-                <button
-                  onClick={handleAccept}
-                  disabled={loading}
-                  className="px-6 py-2.5 bg-[#DC2626] text-white rounded-xl text-sm font-semibold hover:bg-[#B91C1C] disabled:opacity-50 transition-colors shadow-sm"
-                >
-                  {loading ? 'Guardando…' : '✅ Aceptar y continuar'}
-                </button>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={handleDismiss}
+                    disabled={loading}
+                    className="px-5 py-2.5 border border-[#E2E8F0] text-[#475569] rounded-xl text-sm font-medium hover:bg-[#F1F5F9] disabled:opacity-50 transition-colors flex items-center gap-2"
+                  >
+                    <X className="w-4 h-4" /> Cancelar y corregiré manualmente
+                  </button>
+                  <button
+                    onClick={handleAccept}
+                    disabled={loading}
+                    className="px-6 py-2.5 bg-[#DC2626] text-white rounded-xl text-sm font-semibold hover:bg-[#B91C1C] disabled:opacity-50 transition-colors shadow-sm"
+                  >
+                    {loading ? 'Guardando…' : '✅ Aceptar y continuar'}
+                  </button>
+                </div>
               </div>
             </div>
           </motion.div>
