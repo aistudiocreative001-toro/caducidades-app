@@ -105,15 +105,44 @@ export default function AdminPageClient() {
     addToast('Exportado correctamente');
   };
 
+ function readFileWithEncoding(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const buf = reader.result as ArrayBuffer;
+        const bytes = new Uint8Array(buf);
+
+        // Intentar UTF-8 primero
+        const utf8 = new TextDecoder('utf-8', { fatal: true });
+        try {
+          const text = utf8.decode(bytes);
+          // Si no hay caracteres de reemplazo, es UTF-8
+          if (!text.includes('\uFFFD')) {
+            resolve(text);
+            return;
+          }
+        } catch {
+          // Falló UTF-8 strict
+        }
+
+        // Fallback a Windows-1252 (el de Excel en español)
+        const win1252 = new TextDecoder('windows-1252');
+        resolve(win1252.decode(bytes));
+      };
+      reader.onerror = () => reject(reader.error);
+      reader.readAsArrayBuffer(file);
+    });
+  }
+
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const text = await file.text();
     try {
+      const text = await readFileWithEncoding(file);
       const res = await fetch('/api/products/import', {
         method: 'POST',
-        headers: { 'Content-Type': 'text/plain' },
+        headers: { 'Content-Type': 'text/plain; charset=utf-8' },
         body: text,
       });
       const data = await res.json();
