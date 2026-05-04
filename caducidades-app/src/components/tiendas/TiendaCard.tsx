@@ -153,14 +153,14 @@ function TiendaCard({ tiendaKey, nombre, color, productos }: TiendaCardProps) {
             Estados finales
           </p>
           <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
-            <MiniPill emoji="🔴" label="Caducado" {...get('CADUCADO')} />
-            <MiniPill emoji="💸" label="Vend. Cadu." {...get('VENDIDO CADUCADO')} />
-            <MiniPill emoji="🎁" label="Regalo Cadu." {...get('REGALO CADUCADO')} />
-            <MiniPill emoji="💰" label="Vendido" {...get('VENDIDO')} />
-            <MiniPill emoji="🗑️" label="Roto" {...get('ROTO')} />
-            <MiniPill emoji="🚚" label="Movido" {...get('MOVIDO')} />
-            <MiniPill emoji="🪟" label="Mostrador" {...get('MOSTRADOR')} />
-            <MiniPill emoji="❓" label="#N/A" {...get('#N/A')} />
+            <MiniPill emoji="🔴" label="Caducado" {...get('CADUCADO')} color="#DC2626" bg="#FEE2E2" />
+            <MiniPill emoji="💸" label="Vend. Cadu." {...get('VENDIDO CADUCADO')} color="#B91C1C" bg="#FEF2F2" />
+            <MiniPill emoji="🎁" label="Regalo Cadu." {...get('REGALO CADUCADO')} color="#D97706" bg="#FFF7ED" />
+            <MiniPill emoji="💰" label="Vendido" {...get('VENDIDO')} color="#047857" bg="#D1FAE5" />
+            <MiniPill emoji="🗑️" label="Roto" {...get('ROTO')} color="#EF4444" bg="#FFF1F2" />
+            <MiniPill emoji="🚚" label="Movido" {...get('MOVIDO')} color="#4F46E5" bg="#E0E7FF" />
+            <MiniPill emoji="🪟" label="Mostrador" {...get('MOSTRADOR')} color="#475569" bg="#F1F5F9" />
+            <MiniPill emoji="❓" label="#N/A" {...get('#N/A')} color="#CBD5E1" bg="#F8FAFC" />
           </div>
         </motion.div>
       )}
@@ -192,17 +192,17 @@ function RangoPill({ emoji, label, sub, count, uds, coste, color, bg }: {
 }
 
 // Mini pill para estados finales
-function MiniPill({ emoji, label, count, uds, coste }: {
-  emoji: string; label: string; count: number; uds: number; coste: number;
+function MiniPill({ emoji, label, count, uds, coste, color = '#64748B', bg = '#F8FAFC' }: {
+  emoji: string; label: string; count: number; uds: number; coste: number; color?: string; bg?: string;
 }) {
   if (count === 0) return null;
   return (
-    <div className="bg-[#F8FAFC] rounded-lg px-3 py-2 text-center">
+    <div className="rounded-lg px-3 py-2 text-center" style={{ backgroundColor: bg }}>
       <div className="flex items-center justify-center gap-1 mb-1">
         <span className="text-sm">{emoji}</span>
-        <span className="text-xs font-medium text-[#64748B]">{label}</span>
+        <span className="text-xs font-medium" style={{ color }}>{label}</span>
       </div>
-      <p className="text-lg font-bold text-[#0F172A]">{count}</p>
+      <p className="text-lg font-bold" style={{ color }}>{count}</p>
       <p className="text-xs text-[#94A3B8]">{fmtCoste(coste)} €</p>
     </div>
   );
