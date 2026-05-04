@@ -31,7 +31,7 @@ const ESTADO_COLOR: Record<string, string> = {
   'ROTO': '#EF4444',
   'MOVIDO': '#4F46E5',
   'MOSTRADOR': '#475569',
-  'VIGENTE': '#059669',
+  'VIGENTE': '#1565C0',
 };
 
 export default function AdminFilters({
