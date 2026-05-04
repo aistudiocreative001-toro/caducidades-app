@@ -14,6 +14,7 @@ import Link from 'next/link';
 import Papa from 'papaparse';
 import { getEmojiCategoria } from '@/lib/emojis';
 import { getEstadoStyle } from '@/lib/estado-colors';
+import { calcularDias, calcularFechaMes } from '@/lib/utils';
 
 const isNA = (val: string) => !val || val === '#N/A' || val.trim() === 'N/A' || val.trim() === '';
 
@@ -105,20 +106,69 @@ export default function AdminPageClient() {
     addToast('Exportado correctamente');
   };
 
-  const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    
+
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
       delimiter: ',',
-      complete: (results) => {
-        addToast(`CSV importado: ${results.data.length} filas leídas`);
-        // TODO: procesar importación real
-        refetch();
+      complete: async (results) => {
+        const tiendasValidas = ['LR', '3C', 'CL', 'AL'];
+        const rows = (results.data as any[]).filter((r) =>
+          r.ubi && tiendasValidas.includes(r.ubi.trim().toUpperCase())
+        );
+        if (rows.length === 0) {
+          addToast('No se encontraron productos validos en el CSV', 'error');
+          return;
+        }
+        const nuevos = rows.map((r, i) => {
+          const costeStr = r.coste?.toString().replace(/"/g, '').replace(/\s/g, '').replace(/[^0-9,]/g, '').replace(',', '.') || '0';
+          const coste = parseFloat(costeStr) || 0;
+          const udsStr = r.uds?.toString().replace(/"/g, '').replace(/\s/g, '').replace(/[^0-9]/g, '') || '0';
+          const uds = parseInt(udsStr, 10) || 0;
+          const fechaRaw = r.fecha?.toString().replace(/"/g, '').trim() || '';
+          let fecha = fechaRaw;
+          const match = fechaRaw.match(/(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})/);
+          if (match) {
+            const parts = fechaRaw.split(/[\/-]/);
+            fecha = `${parts[2].padStart(4, '0')}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+          }
+          return {
+            id: `csv-${Date.now()}-${i}`,
+            ubi: r.ubi?.trim().toUpperCase() || '',
+            codigo: r.codigo?.toString().replace(/"/g, '').trim() || '',
+            sku: r.sku?.toString().replace(/"/g, '').trim() || '',
+            producto: r.producto?.toString().replace(/"/g, '').trim() || '',
+            marca: r.marca?.toString().replace(/"/g, '').trim() || '',
+            tipo: r.tipo?.toString().replace(/"/g, '').trim() || '',
+            coste,
+            uds,
+            costeTotal: coste * uds,
+            fecha,
+            fechaMes: r['fecha mes']?.toString().replace(/"/g, '').trim() || r.fechaMes?.toString().replace(/"/g, '').trim() || calcularFechaMes(fecha),
+            dias: calcularDias(fecha),
+            estado: r.estado?.toString().replace(/"/g, '').trim() || 'VIGENTE',
+            observaciones: r.observaciones?.toString().replace(/"/g, '').trim() || '',
+            tags: r.tags?.toString().replace(/"/g, '').trim() || '',
+          };
+        });
+
+        try {
+          const res = await fetch('/api/products', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(nuevos),
+          });
+          if (!res.ok) throw new Error('Error al guardar');
+          addToast(`${nuevos.length} productos importados correctamente`);
+          refetch();
+        } catch {
+          addToast('Error al guardar productos importados', 'error');
+        }
       },
-      error: () => addToast('Error al importar CSV', 'error'),
+      error: () => addToast('Error al leer CSV', 'error'),
     });
   };
 

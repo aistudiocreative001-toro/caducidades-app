@@ -36,11 +36,18 @@ export async function POST(request: NextRequest) {
         fecha: origen.fecha,
         fechaMes: origen.fechaMes,
         dias: origen.dias,
-        estado: 'VIGENTE',
+        estado: 'MOVIDO',
         observaciones: `Movido desde almacen el ${new Date().toISOString().split('T')[0]}`,
         tags: origen.tags,
       };
       products.push(nuevo);
+    }
+
+    if (origen.uds <= totalMovido) {
+      products.splice(idx, 1);
+    } else {
+      origen.uds -= totalMovido;
+      origen.costeTotal = origen.uds * origen.coste;
     }
 
     origen.uds -= totalMovido;

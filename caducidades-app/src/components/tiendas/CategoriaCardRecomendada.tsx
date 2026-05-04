@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
@@ -61,7 +61,7 @@ export default function CategoriaCard({
     return getEstadoStyle(p.estado).color;
   };
 
-  // Helpers para fallback a observaciones cuando campos son #N/A o vacíos
+  // Helpers para fallback a observaciones cuando campos son #N/A o vacios
   const isNA = (val: string) => !val || val === '#N/A' || val.trim() === '';
   const categoriaDisplay = isNA(categoria) && p.observaciones ? p.observaciones : categoria;
   const productoDisplay = isNA(p.producto) && p.observaciones ? p.observaciones : p.producto;
@@ -110,6 +110,18 @@ export default function CategoriaCard({
 
   const totalMovido = Object.values(moverDestinos).reduce((s, v) => s + (v || 0), 0);
 
+  const abrirModalMover = () => {
+    const total = p.uds;
+    const base = Math.floor(total / 3);
+    const rem = total % 3;
+    setMoverDestinos({
+      LR: base + (rem > 0 ? 1 : 0),
+      '3C': base + (rem > 1 ? 1 : 0),
+      CL: base,
+    });
+    setShowMoverModal(true);
+  };
+
   const borderColor = esAlmacen ? urgenciaColor : colorTienda;
 
   return (
@@ -139,7 +151,7 @@ export default function CategoriaCard({
           </div>
           
           <div className="text-sm text-[#64748B] mb-1 truncate">
-            {p.ubi} · {marcaDisplay} · {tipoDisplay}
+            {p.ubi} &middot; {marcaDisplay} &middot; {tipoDisplay}
           </div>
           <div className="font-semibold text-lg text-[#0F172A] mb-3 line-clamp-2">
             {productoDisplay}
@@ -153,10 +165,10 @@ export default function CategoriaCard({
                 p.dias <= 30 ? 'text-[#DC2626]' : p.dias <= 60 ? 'text-[#EA580C]' : 'text-[#059669]'
               }`}
             >
-              {p.dias} días
+              {p.dias} dias
             </span>
             <span className="font-semibold">
-              {p.costeTotal.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €
+              {p.costeTotal.toLocaleString('es-ES', { minimumFractionDigits: 2 })} EUR
             </span>
           </div>
           
@@ -200,7 +212,7 @@ export default function CategoriaCard({
             </div>
           ) : (
             <button
-              onClick={() => setShowMoverModal(true)}
+              onClick={abrirModalMover}
               disabled={loading}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm font-medium disabled:opacity-50"
               style={{ backgroundColor: '#FB8C00' }}
@@ -228,13 +240,13 @@ export default function CategoriaCard({
               <button
                 onClick={() => !loading && setShowMoverModal(false)}
                 className="text-[#64748B] hover:text-[#0F172A]"
-              >✕</button>
+              >X</button>
             </div>
             
             <div className="mb-4 bg-[#F8FAFC] rounded-lg p-3">
               <p className="font-medium text-[#0F172A]">{productoDisplay}</p>
               <p className="text-sm text-[#64748B]">
-                Almacén · {p.uds} unidades · {p.costeTotal.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €
+                Almacen &middot; {p.uds} unidades &middot; {p.costeTotal.toLocaleString('es-ES', { minimumFractionDigits: 2 })} EUR
               </p>
             </div>
             
@@ -299,7 +311,7 @@ export default function CategoriaCard({
                 className="flex-1 px-4 py-2 rounded-lg text-sm font-medium text-white disabled:opacity-50"
                 style={{ backgroundColor: '#FB8C00' }}
               >
-                {loading ? 'Moviendo...' : '✅ Confirmar'}
+                {loading ? 'Moviendo...' : 'Confirmar'}
               </button>
             </div>
           </div>
