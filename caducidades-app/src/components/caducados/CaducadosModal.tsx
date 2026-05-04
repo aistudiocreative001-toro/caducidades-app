@@ -120,7 +120,7 @@ export default function CaducadosModal({ productos, onAccept, onDismiss }: Caduc
                       <span className="text-[10px] font-bold text-[#475569]">{p.ubi}</span>
                     </div>
 
-                    <!-- Info -->
+                    {/* Info */}
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-semibold text-[#0F172A] truncate">
                         {p.producto || p.observaciones || '(Sin nombre)'}
