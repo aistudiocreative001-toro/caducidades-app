@@ -125,7 +125,7 @@ function TiendaCard({ tiendaKey, nombre, color, productos }: TiendaCardProps) {
               <RangoPill
                 emoji="✅" label="Vigente" sub="≥ 60 días"
                 count={vigente.count} uds={vigente.uds} coste={vigente.coste}
-                color="#059669" bg="#ECFDF5"
+                color="#1565C0" bg="#DBEAFE"
               />
             </div>
           </div>
