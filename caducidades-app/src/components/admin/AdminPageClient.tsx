@@ -304,19 +304,34 @@ export default function AdminPageClient() {
     e.target.value = '';
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('¿Eliminar este producto?')) return;
-    const before = productos.find(p => p.id === id) || null;
+  const handleDelete = (id: string) => {
+    setDeleteTargetId(id);
+    setDeletePass('');
+    setDeleteError('');
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (deletePass !== 'admin') {
+      setDeleteError('Contraseña incorrecta');
+      return;
+    }
+    if (!deleteTargetId) return;
+    const before = productos.find(p => p.id === deleteTargetId) || null;
     try {
       const res = await fetch('/api/products/delete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ids: [id] }),
+        body: JSON.stringify({ ids: [deleteTargetId] }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Error');
       addToast('Producto eliminado');
       if (before) addToHistory('ELIMINAR', before, { ...before, uds: 0, estado: 'ELIMINADO' } as Product);
+      setShowDeleteModal(false);
+      setDeleteTargetId(null);
+      setDeletePass('');
+      setDeleteError('');
       refetch();
     } catch {
       addToast('Error al eliminar', 'error');
@@ -353,21 +368,8 @@ export default function AdminPageClient() {
   };
 
   const handleBulkDelete = async () => {
-    if (!confirm(`¿Eliminar ${selectedIds.size} productos seleccionados?`)) return;
-    try {
-      const res = await fetch('/api/products/delete', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ids: Array.from(selectedIds) }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Error');
-      addToast(`${selectedIds.size} productos eliminados`);
-      setSelectedIds(new Set());
-      refetch();
-    } catch {
-      addToast('Error al eliminar', 'error');
-    }
+    addToast('Solo se permite eliminar productos de 1 en 1', 'error');
+    setSelectedIds(new Set());
   };
 
   const openMover = (p: Product) => {
@@ -845,7 +847,7 @@ export default function AdminPageClient() {
           <div className="absolute inset-0 bg-black/40" onClick={() => setShowResetModal(false)} />
           <div className="relative bg-white rounded-2xl shadow-xl max-w-sm w-full p-6">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-full bg-[#FEE2E2] flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full bg-[#FEE2F2] flex items-center justify-center">
                 <RotateCcw className="w-5 h-5 text-[#DC2626]" />
               </div>
               <div>
@@ -878,6 +880,53 @@ export default function AdminPageClient() {
                 className="flex-1 px-4 py-2 bg-[#DC2626] text-white rounded-lg text-sm font-medium hover:bg-[#B91C1C] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Confirmar Reset
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Eliminar Producto */}
+      {showDeleteModal && deleteTargetId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/40" onClick={() => { setShowDeleteModal(false); setDeleteTargetId(null); }} />
+          <div className="relative bg-white rounded-2xl shadow-xl max-w-sm w-full p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-[#FEE2F2] flex items-center justify-center">
+                <Trash2 className="w-5 h-5 text-[#DC2626]" />
+              </div>
+              <div>
+                <h3 className="font-bold text-[#0F172A]">Eliminar Producto</h3>
+                <p className="text-sm text-[#64748B]">Se eliminará permanentemente</p>
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-[#64748B] mb-1">Contraseña</label>
+              <input
+                type="password"
+                value={deletePass}
+                onChange={(e) => { setDeletePass(e.target.value); setDeleteError(''); }}
+                placeholder="Introduce la contraseña..."
+                className="w-full px-3 py-2 border border-[#E2E8F0] rounded-lg text-sm focus:outline-none focus:border-[#1565C0]"
+                onKeyDown={(e) => { if (e.key === 'Enter') handleDeleteConfirm(); }}
+              />
+              {deleteError && <p className="text-xs text-[#DC2626] mt-1">{deleteError}</p>}
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => { setShowDeleteModal(false); setDeleteTargetId(null); setDeletePass(''); }}
+                className="flex-1 px-4 py-2 border border-[#E2E8F0] rounded-lg text-sm font-medium text-[#64748B] hover:bg-[#F1F5F9]"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleDeleteConfirm}
+                disabled={!deletePass}
+                className="flex-1 px-4 py-2 bg-[#DC2626] text-white rounded-lg text-sm font-medium hover:bg-[#B91C1C] disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Confirmar
               </button>
             </div>
           </div>
