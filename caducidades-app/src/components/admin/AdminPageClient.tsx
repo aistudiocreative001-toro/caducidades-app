@@ -11,7 +11,7 @@ import HistorialSesion, { type HistoryItem } from './HistorialSesion';
 import { ToastContainer, useToast } from '@/components/ui/Toast';
 import { TIENDAS } from '@/types/product';
 import type { Product } from '@/types/product';
-import { Edit, Trash2, Download, Upload, Plus, AlertCircle, ArrowLeft, RotateCcw, CloudDownload, Truck, Minus, Printer, History } from 'lucide-react';
+import { Edit, Trash2, Download, Upload, Plus, AlertCircle, ArrowLeft, RotateCcw, CloudDownload, Truck, Minus, Printer, History, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import Link from 'next/link';
 import Papa from 'papaparse';
 import { getEmojiCategoria } from '@/lib/emojis';
@@ -37,6 +37,8 @@ export default function AdminPageClient() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [showCaducadosHoy, setShowCaducadosHoy] = useState(false);
+  const [caducadosSort, setCaducadosSort] = useState<{ key: string; dir: 'asc' | 'desc' } | null>(null);
+  const [tableSort, setTableSort] = useState<{ key: string; dir: 'asc' | 'desc' } | null>(null);
   const [showResetModal, setShowResetModal] = useState(false);
   const [showRestoreModal, setShowRestoreModal] = useState(false);
   const [moverProduct, setMoverProduct] = useState<Product | null>(null);
@@ -164,8 +166,37 @@ export default function AdminPageClient() {
         return true;
       });
     }
-    return res.sort((a, b) => a.dias - b.dias);
+    return res;
   }, [productos, busqueda, tienda, categoria, estado, rangoDias]);
+
+  const filtradosSorted = useMemo(() => {
+    if (!tableSort) return [...filtrados].sort((a, b) => a.dias - b.dias); // default: sort by dias
+    const { key, dir } = tableSort;
+    const mult = dir === 'asc' ? 1 : -1;
+    const getVal = (p: Product) => {
+      switch (key) {
+        case 'ubi': return p.ubi;
+        case 'codigo': return p.codigo;
+        case 'sku': return p.sku;
+        case 'producto': return isNA(p.producto) ? (p.observaciones || '') : p.producto;
+        case 'marca': return p.marca || '';
+        case 'tipo': return p.tipo || '';
+        case 'coste': return p.coste;
+        case 'uds': return p.uds;
+        case 'costeTotal': return p.costeTotal;
+        case 'fecha': return p.fecha;
+        case 'dias': return p.dias ?? -Infinity;
+        case 'estado': return p.estado;
+        default: return '';
+      }
+    };
+    return [...filtrados].sort((a, b) => {
+      const av = getVal(a);
+      const bv = getVal(b);
+      if (typeof av === 'number' && typeof bv === 'number') return (av - bv) * mult;
+      return String(av).localeCompare(String(bv), 'es-ES', { numeric: true }) * mult;
+    });
+  }, [filtrados, tableSort]);
 
   // Caducados de hoy: fecha < hoy, no estado final, aún no marcados caducado
   const hoy = new Date().toISOString().split('T')[0];
@@ -173,6 +204,34 @@ export default function AdminPageClient() {
     const estadosFijos = ['ROTO', 'VENDIDO', 'VENDIDO CADUCADO', 'REGALO CADUCADO', 'MOVIDO'];
     return productos.filter(p => p.fecha < hoy && !estadosFijos.includes(p.estado.toUpperCase()) && p.estado !== 'CADUCADO' && p.uds > 0);
   }, [productos]);
+
+  // Sort caducados table
+  const caducadosHoySorted = useMemo(() => {
+    if (!caducadosSort) return caducadosHoy;
+    const { key, dir } = caducadosSort;
+    const mult = dir === 'asc' ? 1 : -1;
+    const getVal = (p: Product) => {
+      switch (key) {
+        case 'ubi': return p.ubi;
+        case 'producto': return isNA(p.producto) ? (p.observaciones || '') : p.producto;
+        case 'marca': return p.marca || '';
+        case 'tipo': return p.tipo || '';
+        case 'uds': return p.uds;
+        case 'costeTotal': return p.costeTotal;
+        case 'estado': return p.estado;
+        case 'fecha': return p.fecha;
+        case 'dias': return p.dias ?? -Infinity;
+        default: return '';
+      }
+    };
+    return [...caducadosHoy].sort((a, b) => {
+      const av = getVal(a);
+      const bv = getVal(b);
+      if (typeof av === 'number' && typeof bv === 'number') return (av - bv) * mult;
+      return String(av).localeCompare(String(bv), 'es-ES', { numeric: true }) * mult;
+    });
+  }, [caducadosHoy, caducadosSort]);
+
   const costeCaducadosHoy = caducadosHoy.reduce((s, p) => s + p.costeTotal, 0);
 
   const handleExport = () => {
@@ -549,23 +608,43 @@ export default function AdminPageClient() {
                       className="rounded border-[#E2E8F0]"
                     />
                   </th>
-                  <th className="px-3 py-3 text-left text-xs font-semibold text-[#64748B] uppercase">UBI</th>
-                  <th className="px-3 py-3 text-left text-xs font-semibold text-[#64748B] uppercase">CÓDIGO</th>
-                  <th className="px-3 py-3 text-left text-xs font-semibold text-[#64748B] uppercase">SKU</th>
-                  <th className="px-3 py-3 text-left text-xs font-semibold text-[#64748B] uppercase">PRODUCTO</th>
-                  <th className="px-3 py-3 text-left text-xs font-semibold text-[#64748B] uppercase">MARCA</th>
-                  <th className="px-3 py-3 text-left text-xs font-semibold text-[#64748B] uppercase">TIPO</th>
-                  <th className="px-3 py-3 text-left text-xs font-semibold text-[#64748B] uppercase">COSTE</th>
-                  <th className="px-3 py-3 text-left text-xs font-semibold text-[#64748B] uppercase">UDS</th>
-                  <th className="px-3 py-3 text-left text-xs font-semibold text-[#64748B] uppercase">COSTE TOTAL</th>
-                  <th className="px-3 py-3 text-left text-xs font-semibold text-[#64748B] uppercase">FECHA</th>
-                  <th className="px-3 py-3 text-left text-xs font-semibold text-[#64748B] uppercase">DIAS</th>
-                  <th className="px-3 py-3 text-left text-xs font-semibold text-[#64748B] uppercase">ESTADO</th>
+                  {[
+                    { key: 'ubi', label: 'UBI' },
+                    { key: 'codigo', label: 'CÓDIGO' },
+                    { key: 'sku', label: 'SKU' },
+                    { key: 'producto', label: 'PRODUCTO' },
+                    { key: 'marca', label: 'MARCA' },
+                    { key: 'tipo', label: 'TIPO' },
+                    { key: 'coste', label: 'COSTE' },
+                    { key: 'uds', label: 'UDS' },
+                    { key: 'costeTotal', label: 'COSTE TOTAL' },
+                    { key: 'fecha', label: 'FECHA' },
+                    { key: 'dias', label: 'DIAS' },
+                    { key: 'estado', label: 'ESTADO' },
+                  ].map(({ key, label }) => {
+                    const active = tableSort?.key === key;
+                    return (
+                      <th
+                        key={key}
+                        onClick={() => setTableSort(prev => prev?.key === key ? { key, dir: prev.dir === 'asc' ? 'desc' : 'asc' } : { key, dir: 'asc' })}
+                        className="px-3 py-3 text-left text-xs font-semibold text-[#64748B] uppercase cursor-pointer select-none hover:text-[#1565C0] transition-colors whitespace-nowrap"
+                      >
+                        <span className="inline-flex items-center gap-1">
+                          {label}
+                          {active ? (
+                            tableSort?.dir === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />
+                          ) : (
+                            <ArrowUpDown className="w-3 h-3 opacity-30" />
+                          )}
+                        </span>
+                      </th>
+                    );
+                  })}
                   <th className="px-3 py-3 text-center text-xs font-semibold text-[#64748B] uppercase">ACCIÓN</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#F1F5F9]">
-                {filtrados.map(p => (
+                {filtradosSorted.map(p => (
                   <tr key={p.id} className={`hover:bg-[#F8FAFC] transition-colors ${selectedIds.has(p.id) ? 'bg-[#F0F9FF]' : ''}`}>
                     <td className="px-2 py-1.5">
                       <input
