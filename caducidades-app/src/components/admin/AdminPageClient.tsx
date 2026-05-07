@@ -7,7 +7,8 @@ import AdminKpis from './AdminKpis';
 import AdminFilters from './AdminFilters';
 import ProductoDrawer from '@/components/productos/ProductoDrawer';
 import RestoreModal from '@/components/backup/RestoreModal';
-import HistorialSesion, { type HistoryItem } from './HistorialSesion';
+import HistorialSesion from './HistorialSesion';
+import { usePersistentHistory } from '@/hooks/useHistory';
 import { ToastContainer, useToast } from '@/components/ui/Toast';
 import { TIENDAS } from '@/types/product';
 import type { Product } from '@/types/product';
@@ -45,8 +46,7 @@ export default function AdminPageClient() {
   const [moverDestinos, setMoverDestinos] = useState<Record<string, number>>({});
   const [resetPass, setResetPass] = useState('');
   const [showHistorial, setShowHistorial] = useState(false);
-  const [history, setHistory] = useState<HistoryItem[]>([]);
-  const [historyCounter, setHistoryCounter] = useState(0);
+  const { history, addToHistory, clearHistory } = usePersistentHistory();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Delete password modal
@@ -93,35 +93,8 @@ export default function AdminPageClient() {
     }
   };
 
-  // --- Historial helpers ---
-  const addToHistory = (action: string, before: Product | null, after: Product) => {
-    const changes: { field: string; before: string; after: string }[] = [];
-    if (before) {
-      if (before.uds !== after.uds) changes.push({ field: 'Unidades', before: String(before.uds), after: String(after.uds) });
-      if (before.estado !== after.estado) changes.push({ field: 'Estado', before: before.estado, after: after.estado });
-      if (before.observaciones !== after.observaciones) changes.push({ field: 'Observaciones', before: before.observaciones, after: after.observaciones });
-      if (before.ubi !== after.ubi) changes.push({ field: 'Ubicación', before: before.ubi, after: after.ubi });
-      if (before.fecha !== after.fecha) changes.push({ field: 'Fecha', before: before.fecha, after: after.fecha });
-      if (before.coste !== after.coste) changes.push({ field: 'Coste', before: String(before.coste), after: String(after.coste) });
-      if (before.producto !== after.producto) changes.push({ field: 'Producto', before: before.producto, after: after.producto });
-      if (before.marca !== after.marca) changes.push({ field: 'Marca', before: before.marca, after: after.marca });
-      if (before.tipo !== after.tipo) changes.push({ field: 'Tipo', before: before.tipo, after: after.tipo });
-      if (before.sku !== after.sku) changes.push({ field: 'SKU', before: before.sku, after: after.sku });
-      if (before.tags !== after.tags) changes.push({ field: 'Tags', before: before.tags, after: after.tags });
-    }
-    const item: HistoryItem = {
-      id: `hist-${Date.now()}-${historyCounter}`,
-      timestamp: new Date().toISOString(),
-      producto: after,
-      action,
-      changes: changes.length > 0 ? changes : [{ field: 'Producto', before: action, after: 'Modificado' }],
-      fullBefore: before,
-    };
-    setHistory(prev => [item, ...prev]);
-    setHistoryCounter(c => c + 1);
-  };
-
-  const handleRestoreHistory = async (item: HistoryItem) => {
+  // --- Historial restore helper (uses persistent history) ---
+  const handleRestoreHistory = async (item: { fullBefore?: Product | null }) => {
     if (!item.fullBefore) {
       addToast('No hay snapshot anterior para restaurar', 'error');
       return;
@@ -139,12 +112,6 @@ export default function AdminPageClient() {
     } catch (e: any) {
       addToast(e.message || 'Error al restaurar', 'error');
     }
-  };
-
-  const handleClearHistory = () => {
-    if (!confirm('¿Borrar todo el historial de esta sesión?')) return;
-    setHistory([]);
-    addToast('Historial borrado');
   };
   // --- End Historial helpers ---
 
@@ -823,7 +790,7 @@ export default function AdminPageClient() {
         onClose={() => setShowHistorial(false)}
         history={history}
         onRestore={handleRestoreHistory}
-        onClear={handleClearHistory}
+        onClear={clearHistory}
       />
 
       <ToastContainer toasts={toasts} removeToast={removeToast} />
