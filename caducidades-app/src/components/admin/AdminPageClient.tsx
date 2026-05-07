@@ -351,12 +351,11 @@ export default function AdminPageClient() {
           <button onClick={openCreate} className="inline-flex items-center gap-2 px-4 py-2 bg-[#1565C0] text-white rounded-lg text-sm font-medium hover:bg-[#0D47A1]">
             <Plus className="w-4 h-4" /> Nuevo Producto
           </button>
-          <button onClick={() => fileInputRef.current?.click()} className="inline-flex items-center gap-2 px-4 py-2 border border-[#E2E8F0] rounded-lg text-sm font-medium text-[#475569] hover:bg-[#F1F5F9]">
-            <Upload className="w-4 h-4" /> Importar CSV
-          </button>
-          <input type="file" accept=".csv" ref={fileInputRef} onChange={handleImport} className="hidden" />
-          <button onClick={handleExport} className="inline-flex items-center gap-2 px-4 py-2 border border-[#E2E8F0] rounded-lg text-sm font-medium text-[#475569] hover:bg-[#F1F5F9]">
-            <Download className="w-4 h-4" /> Exportar Excel
+          <button
+            onClick={() => setShowHistorial(true)}
+            className="inline-flex items-center gap-2 px-4 py-2 border border-[#E2E8F0] text-[#475569] rounded-lg text-sm font-medium hover:bg-[#F1F5F9]"
+          >
+            <History className="w-4 h-4" /> Historial ({history.length})
           </button>
           <button
             onClick={() => setShowCaducadosHoy(!showCaducadosHoy)}
@@ -368,17 +367,18 @@ export default function AdminPageClient() {
           >
             <AlertCircle className="w-4 h-4" /> Caducados a fecha ({caducadosHoy.length}) · {costeCaducadosHoy.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €
           </button>
+          <button onClick={() => fileInputRef.current?.click()} className="inline-flex items-center gap-2 px-4 py-2 border border-[#E2E8F0] rounded-lg text-sm font-medium text-[#475569] hover:bg-[#F1F5F9]">
+            <Upload className="w-4 h-4" /> Importar CSV
+          </button>
+          <input type="file" accept=".csv" ref={fileInputRef} onChange={handleImport} className="hidden" />
+          <button onClick={handleExport} className="inline-flex items-center gap-2 px-4 py-2 border border-[#E2E8F0] rounded-lg text-sm font-medium text-[#475569] hover:bg-[#F1F5F9]">
+            <Download className="w-4 h-4" /> Exportar Excel
+          </button>
           <button
             onClick={() => setShowRestoreModal(true)}
             className="inline-flex items-center gap-2 px-4 py-2 border border-[#E2E8F0] text-[#475569] rounded-lg text-sm font-medium hover:bg-[#F1F5F9]"
           >
             <CloudDownload className="w-4 h-4" /> Restablecer cambios
-          </button>
-          <button
-            onClick={() => setShowHistorial(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 border border-[#E2E8F0] text-[#475569] rounded-lg text-sm font-medium hover:bg-[#F1F5F9]"
-          >
-            <History className="w-4 h-4" /> Historial ({history.length})
           </button>
           <button
             onClick={() => setShowResetModal(true)}
