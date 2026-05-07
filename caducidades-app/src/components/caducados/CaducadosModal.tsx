@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { AlertTriangle, Package, X } from 'lucide-react';
+import { AlertTriangle, Package, X, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Product } from '@/types/product';
-import { TIENDAS, ESTADOS_FIJOS } from '@/types/product';
+import { TIENDAS } from '@/types/product';
 import { getEstadoStyle } from '@/lib/estado-colors';
 
 interface CaducadosModalProps {
@@ -16,60 +16,47 @@ interface CaducadosModalProps {
 const fmtMoney = (n: number) =>
   n.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-const ESTADOS_OPCIONES = [
-  'VIGENTE',
-  'EN RIESGO',
+// Solo estados finales para resolver productos caducados
+const ESTADOS_RESOLUCION = [
   'CADUCADO',
-  'ROTO',
-  'VENDIDO',
   'VENDIDO CADUCADO',
   'REGALO CADUCADO',
-  'MOVIDO',
-  'MOSTRADOR',
+  'ROTO',
 ];
 
 export default function CaducadosModal({ productos, onAccept, onDismiss }: CaducadosModalProps) {
-  const [loading, setLoading] = useState(false);
+  const [loadingId, setLoadingId] = useState<string | null>(null);
   const [dimissed, setDimissed] = useState(false);
-  const [needsPassword, setNeedsPassword] = useState(false);
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [estados, setEstados] = useState<Record<string, string>>(() => {
-    const map: Record<string, string> = {};
-    productos.forEach(p => { map[p.id] = p.estado; });
-    return map;
-  });
+  const [items, setItems] = useState<Product[]>(productos);
 
-  const totalCoste = productos.reduce((sum, p) => sum + p.costeTotal, 0);
+  const totalCoste = items.reduce((sum, p) => sum + p.costeTotal, 0);
 
-  if (productos.length === 0 || dimissed) return null;
-
-  const handleAccept = async () => {
-    if (!needsPassword) {
-      setNeedsPassword(true);
-      return;
+  if (items.length === 0 || dimissed) {
+    if (items.length === 0 && !dimissed) {
+      // Se resolvieron todos, cerrar automáticamente
+      setTimeout(() => onAccept(), 300);
     }
-    if (password !== 'admin') {
-      setError('Contraseña incorrecta');
-      return;
-    }
-    setLoading(true);
+    return null;
+  }
+
+  const handleResolve = async (p: Product, nuevoEstado: string) => {
+    if (loadingId) return;
+    setLoadingId(p.id);
     try {
-      const items = productos.map(p => ({ id: p.id, estado: estados[p.id] }));
       const res = await fetch('/api/products/caducar-batch', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ items }),
+        body: JSON.stringify({ items: [{ id: p.id, estado: nuevoEstado }] }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Error al guardar');
-      onAccept();
-      setDimissed(true);
+      // Quitar de la lista local
+      setItems(prev => prev.filter(x => x.id !== p.id));
     } catch (e) {
-      console.error('Error caducando productos:', e);
-      alert('Error al guardar cambios. Intenta de nuevo.');
+      console.error('Error resolviendo producto:', e);
+      alert('Error al guardar. Intenta de nuevo.');
     } finally {
-      setLoading(false);
+      setLoadingId(null);
     }
   };
 
@@ -78,11 +65,16 @@ export default function CaducadosModal({ productos, onAccept, onDismiss }: Caduc
     onDismiss();
   };
 
+  const handleAcceptAll = () => {
+    setDimissed(true);
+    onAccept();
+  };
+
   const tiendaColor = (ubi: string) => TIENDAS.find((t) => t.key === ubi)?.color || '#64748B';
 
   return (
     <AnimatePresence>
-      {!dimissed && (
+      {!dimissed && items.length > 0 && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -107,11 +99,14 @@ export default function CaducadosModal({ productos, onAccept, onDismiss }: Caduc
                 </div>
                 <div className="flex-1 min-w-0">
                   <h2 className="text-lg font-bold text-[#DC2626] leading-tight">
-                    Caducados a fecha ({productos.length})
+                    Caducados a fecha ({items.length})
                   </h2>
                   <p className="text-sm text-[#991B1B] mt-1">
                     Coste total afectado:&nbsp;
                     <span className="font-bold">{fmtMoney(totalCoste)} €</span>
+                  </p>
+                  <p className="text-xs text-[#DC2626] mt-1">
+                    Selecciona el destino de cada producto para resolverlo
                   </p>
                 </div>
               </div>
@@ -120,7 +115,7 @@ export default function CaducadosModal({ productos, onAccept, onDismiss }: Caduc
             {/* List */}
             <div className="flex-1 overflow-y-auto p-4 sm:p-6">
               <div className="space-y-2">
-                {productos.map((p) => (
+                {items.map((p) => (
                   <div
                     key={p.id}
                     className="flex items-center gap-3 rounded-xl border border-[#E2E8F0] bg-white p-3 hover:shadow-sm transition-shadow"
@@ -166,19 +161,23 @@ export default function CaducadosModal({ productos, onAccept, onDismiss }: Caduc
                       </div>
                     </div>
 
-                    {/* Estado Select */}
-                    <div className="shrink-0 flex flex-col items-end gap-1">
+                    {/* Estado Select & Days */}
+                    <div className="shrink-0 flex flex-col items-end gap-1.5">
                       <select
-                        value={estados[p.id]}
-                        onChange={(e) => setEstados(prev => ({ ...prev, [p.id]: e.target.value }))}
-                        className="text-xs font-semibold px-2 py-1 rounded-md border cursor-pointer focus:outline-none"
+                        value=""
+                        disabled={loadingId === p.id}
+                        onChange={(e) => {
+                          if (e.target.value) handleResolve(p, e.target.value);
+                        }}
+                        className="text-xs font-semibold px-2 py-1 rounded-md border cursor-pointer focus:outline-none disabled:opacity-50"
                         style={{
-                          backgroundColor: getEstadoStyle(estados[p.id]).bg,
-                          color: getEstadoStyle(estados[p.id]).color,
-                          borderColor: getEstadoStyle(estados[p.id]).color + '40',
+                          backgroundColor: '#F1F5F9',
+                          color: '#475569',
+                          borderColor: '#E2E8F0',
                         }}
                       >
-                        {ESTADOS_OPCIONES.map(est => (
+                        <option value="" disabled>Resolver como...</option>
+                        {ESTADOS_RESOLUCION.map(est => (
                           <option key={est} value={est}>{est}</option>
                         ))}
                       </select>
@@ -195,55 +194,21 @@ export default function CaducadosModal({ productos, onAccept, onDismiss }: Caduc
             <div className="p-4 sm:p-6 border-t border-[#E2E8F0] bg-[#FAFAFA]">
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                 <p className="text-xs text-[#64748B] shrink-0">
-                  Se marcarán con los estados seleccionados
+                  {items.length} producto{items.length > 1 ? 's' : ''} pendiente{items.length > 1 ? 's' : ''} de resolver
                 </p>
                 <div className="flex items-center gap-3">
-                  {!needsPassword ? (
-                    <>
-                      <button
-                        onClick={handleDismiss}
-                        disabled={loading}
-                        className="px-5 py-2.5 border border-[#E2E8F0] text-[#475569] rounded-xl text-sm font-medium hover:bg-[#F1F5F9] disabled:opacity-50 transition-colors flex items-center gap-2"
-                      >
-                        <X className="w-4 h-4" /> Cancelar y corregiré manualmente
-                      </button>
-                      <button
-                        onClick={handleAccept}
-                        disabled={loading}
-                        className="px-6 py-2.5 bg-[#DC2626] text-white rounded-xl text-sm font-semibold hover:bg-[#B91C1C] disabled:opacity-50 transition-colors shadow-sm"
-                      >
-                        {loading ? 'Guardando…' : '✅ Aceptar y continuar'}
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="password"
-                          value={password}
-                          onChange={(e) => { setPassword(e.target.value); setError(''); }}
-                          placeholder="Contraseña admin"
-                          className="px-3 py-2 border border-[#E2E8F0] rounded-lg text-sm focus:outline-none focus:border-[#1565C0]"
-                          onKeyDown={(e) => { if (e.key === 'Enter') handleAccept(); }}
-                        />
-                        <button
-                          onClick={handleAccept}
-                          disabled={loading || !password}
-                          className="px-5 py-2.5 bg-[#DC2626] text-white rounded-xl text-sm font-semibold hover:bg-[#B91C1C] disabled:opacity-50 transition-colors shadow-sm"
-                        >
-                          {loading ? 'Guardando…' : '✅ Confirmar'}
-                        </button>
-                        <button
-                          onClick={() => { setNeedsPassword(false); setPassword(''); setError(''); }}
-                          disabled={loading}
-                          className="px-4 py-2.5 border border-[#E2E8F0] text-[#475569] rounded-xl text-sm font-medium hover:bg-[#F1F5F9]"
-                        >
-                          Volver
-                        </button>
-                      </div>
-                      {error && <p className="text-xs text-[#DC2626]">{error}</p>}
-                    </>
-                  )}
+                  <button
+                    onClick={handleDismiss}
+                    className="px-5 py-2.5 border border-[#E2E8F0] text-[#475569] rounded-xl text-sm font-medium hover:bg-[#F1F5F9] transition-colors flex items-center gap-2"
+                  >
+                    <X className="w-4 h-4" /> Cerrar
+                  </button>
+                  <button
+                    onClick={handleAcceptAll}
+                    className="px-6 py-2.5 bg-[#DC2626] text-white rounded-xl text-sm font-semibold hover:bg-[#B91C1C] transition-colors shadow-sm"
+                  >
+                    <CheckCircle2 className="w-4 h-4 inline mr-1" /> Hecho
+                  </button>
                 </div>
               </div>
             </div>
