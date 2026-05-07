@@ -18,26 +18,16 @@ interface TiendaCardProps {
 const fmtNumber = (n: number) => n.toLocaleString('es-ES');
 const fmtCoste = (n: number) => n.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-// Colores para rangos de días
-const RANGO_STYLE: Record<string, { bg: string; text: string; emoji: string }> = {
-  'critico': { bg: '#FEF2F2', text: '#DC2626', emoji: '🔥' },
-  'urgente': { bg: '#FFF7ED', text: '#EA580C', emoji: '⚠️' },
-  'prioritario': { bg: '#FEF3C7', text: '#D97706', emoji: '📅' },
-  'vigente': { bg: '#ECFDF5', text: '#059669', emoji: '✅' },
-};
-
 function TiendaCard({ tiendaKey, nombre, color, productos }: TiendaCardProps) {
   const [mostrarEstados, setMostrarEstados] = useState(false);
 
   const estadosFinales = ['ROTO', 'VENDIDO', 'VENDIDO CADUCADO', 'REGALO CADUCADO', 'MOVIDO'];
   const hoy = new Date().toISOString().split('T')[0];
 
-  // Activos = uds > 0, fecha >= hoy, no estado final (incluye VIGENTE y MOSTRADOR)
   const activos = productos.filter(p =>
     p.uds > 0 && p.fecha >= hoy && !estadosFinales.includes(p.estado.toUpperCase())
   );
 
-  // Rangos de días (sobre activos; CADUCADO queda fuera por fecha < hoy o estado)
   const criticoList = activos.filter(p => p.dias != null && p.dias >= 0 && p.dias < 10);
   const urgenteList = activos.filter(p => p.dias != null && p.dias >= 10 && p.dias < 30);
   const prioritarioList = activos.filter(p => p.dias != null && p.dias >= 30 && p.dias < 60);
@@ -54,7 +44,6 @@ function TiendaCard({ tiendaKey, nombre, color, productos }: TiendaCardProps) {
   const prioritario = makeMetrics(prioritarioList);
   const vigente = makeMetrics(vigenteList);
 
-  // Estados finales + CADUCADO + MOSTRADOR + #N/A
   const estadosDesplegable = ['CADUCADO', 'VENDIDO CADUCADO', 'REGALO CADUCADO', 'VENDIDO', 'ROTO', 'MOVIDO', 'MOSTRADOR', '#N/A'];
   const grupos: Record<string, { count: number; uds: number; coste: number }> = {};
   for (const p of productos) {
@@ -80,50 +69,50 @@ function TiendaCard({ tiendaKey, nombre, color, productos }: TiendaCardProps) {
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -2, boxShadow: '0 8px 24px -4px rgba(0,0,0,0.08)' }}
       transition={{ duration: 0.3 }}
-      className="relative self-start bg-white rounded-2xl border border-[#E2E8F0] shadow-sm overflow-hidden cursor-pointer"
+      className="relative self-start bg-white rounded-xl border border-[#E2E8F0] shadow-sm overflow-hidden cursor-pointer"
     >
       <Link href={`/tienda/${encodeURIComponent(tiendaKey)}`} className="block">
         <div className="flex">
-          <div className="w-1.5 shrink-0" style={{ backgroundColor: color }} />
+          <div className="w-1 shrink-0" style={{ backgroundColor: color }} />
 
-          <div className="flex-1 p-6 md:p-8">
-            <div className="flex items-center gap-4 mb-6">
+          <div className="flex-1 p-4 sm:p-5">
+            <div className="flex items-center gap-3 mb-3">
               <div
-                className="w-14 h-14 rounded-full flex items-center justify-center shrink-0"
+                className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
                 style={{ backgroundColor: bgColor }}
               >
-                <Package className="w-7 h-7" style={{ color }} />
+                <Package className="w-5 h-5" style={{ color }} />
               </div>
               <div className="min-w-0">
-                <h3 className="text-xl font-bold text-[#0F172A] truncate">{nombre}</h3>
-                <p className="text-sm text-[#64748B] font-mono">{tiendaKey}</p>
+                <h3 className="text-base font-bold text-[#0F172A] truncate">{nombre}</h3>
+                <p className="text-xs text-[#64748B] font-mono">{tiendaKey}</p>
               </div>
             </div>
 
-            <div className="flex items-baseline gap-2 mb-6">
-              <span className="text-3xl font-bold text-[#0F172A]">{fmtNumber(totalUds)}</span>
-              <span className="text-base text-[#64748B]">uds activas · {fmtCoste(totalCoste)} €</span>
+            <div className="flex items-baseline gap-1.5 mb-3">
+              <span className="text-2xl font-bold text-[#0F172A]">{fmtNumber(totalUds)}</span>
+              <span className="text-xs text-[#64748B]">uds · {fmtCoste(totalCoste)} €</span>
             </div>
 
-            {/* Rangos CRÍTICO / URGENTE / PRIORITARIO / VIGENTE */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-              <RangoPill
-                emoji="🔥" label="Crítico" sub="< 10 días"
+            {/* Rangos */}
+            <div className="grid grid-cols-2 gap-1.5">
+              <RangoMini
+                label="Crítico" sub="<10 d"
                 count={critico.count} uds={critico.uds} coste={critico.coste}
                 color="#DC2626" bg="#FEF2F2"
               />
-              <RangoPill
-                emoji="⚠️" label="Urgente" sub="10-30 días"
+              <RangoMini
+                label="Urgente" sub="10-30 d"
                 count={urgente.count} uds={urgente.uds} coste={urgente.coste}
                 color="#EA580C" bg="#FFF7ED"
               />
-              <RangoPill
-                emoji="📅" label="Prioritario" sub="30-60 días"
+              <RangoMini
+                label="Prioritario" sub="30-60 d"
                 count={prioritario.count} uds={prioritario.uds} coste={prioritario.coste}
                 color="#D97706" bg="#FEF3C7"
               />
-              <RangoPill
-                emoji="✅" label="Vigente" sub="≥ 60 días"
+              <RangoMini
+                label="Vigente" sub="≥60 d"
                 count={vigente.count} uds={vigente.uds} coste={vigente.coste}
                 color="#1565C0" bg="#DBEAFE"
               />
@@ -132,14 +121,14 @@ function TiendaCard({ tiendaKey, nombre, color, productos }: TiendaCardProps) {
         </div>
       </Link>
 
-      {/* Desplegable de estados finales */}
+      {/* Desplegable estados finales */}
       <button
         onClick={(e) => { e.preventDefault(); e.stopPropagation(); setMostrarEstados(!mostrarEstados); }}
-        className="w-full flex items-center justify-center gap-2 px-6 py-3 border-t border-[#E2E8F0] text-sm text-[#64748B] hover:bg-[#F8FAFC] transition-colors"
+        className="w-full flex items-center justify-center gap-1.5 px-4 py-2 border-t border-[#E2E8F0] text-xs text-[#64748B] hover:bg-[#F8FAFC] transition-colors"
       >
         <span>{mostrarEstados ? 'Ocultar estados' : 'Ver más estados'}</span>
         <ChevronDown
-          className={`w-4 h-4 transition-transform ${mostrarEstados ? 'rotate-180' : ''}`}
+          className={`w-3 h-3 transition-transform ${mostrarEstados ? 'rotate-180' : ''}`}
         />
       </button>
 
@@ -148,27 +137,23 @@ function TiendaCard({ tiendaKey, nombre, color, productos }: TiendaCardProps) {
           initial={{ height: 0, opacity: 0 }}
           animate={{ height: 'auto', opacity: 1 }}
           transition={{ duration: 0.2 }}
-          className="px-6 pb-6 border-t border-[#E2E8F0]"
+          className="px-4 pb-4 border-t border-[#E2E8F0]"
         >
-          <p className="text-xs font-semibold text-[#64748B] uppercase tracking-wider mb-3 pt-4">
+          <p className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider mb-2 pt-3">
             Estados finales
           </p>
-          <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+          <div className="grid grid-cols-4 gap-1.5">
             {(['CADUCADO','VENDIDO CADUCADO','REGALO CADUCADO','VENDIDO','ROTO','MOVIDO','MOSTRADOR','#N/A'] as const).map(est => {
               const info = get(est);
               if (info.count === 0) return null;
               const estUpper = est === '#N/A' ? '' : est;
               const s = estUpper ? getEstadoStyle(estUpper) : { color: '#CBD5E1', bg: '#F8FAFC' };
-              const emojis: Record<string, string> = {
-                CADUCADO: '🔴', 'VENDIDO CADUCADO': '💸', 'REGALO CADUCADO': '🎁',
-                VENDIDO: '💰', ROTO: '🗑️', MOVIDO: '🚚', MOSTRADOR: '🪟', '#N/A': '❓',
-              };
               const labels: Record<string, string> = {
-                CADUCADO: 'Caducado', 'VENDIDO CADUCADO': 'Vend. Cadu.', 'REGALO CADUCADO': 'Regalo Cadu.',
+                CADUCADO: 'Caducado', 'VENDIDO CADUCADO': 'Vend.Cadu.', 'REGALO CADUCADO': 'Regalo Cadu.',
                 VENDIDO: 'Vendido', ROTO: 'Roto', MOVIDO: 'Movido', MOSTRADOR: 'Mostrador', '#N/A': '#N/A',
               };
               return (
-                <MiniPill key={est} emoji={emojis[est]} label={labels[est]} {...info} color={s.color} bg={s.bg} />
+                <MiniPill key={est} label={labels[est]} {...info} color={s.color} bg={s.bg} />
               );
             })}
           </div>
@@ -178,42 +163,39 @@ function TiendaCard({ tiendaKey, nombre, color, productos }: TiendaCardProps) {
   );
 }
 
-// Componente para rango de días (grande)
-function RangoPill({ emoji, label, sub, count, uds, coste, color, bg }: {
-  emoji: string; label: string; sub: string; count: number; uds: number; coste: number; color: string; bg: string;
+// Rango compacto (2x2 grid)
+function RangoMini({ label, sub, count, uds, coste, color, bg }: {
+  label: string; sub: string; count: number; uds: number; coste: number; color: string; bg: string;
 }) {
   const esCero = count === 0;
   const displayColor = esCero ? '#059669' : color;
   const displayBg = esCero ? '#ECFDF5' : bg;
   return (
-    <div className="rounded-xl p-4 text-center" style={{ backgroundColor: displayBg }}>
-      <p className="text-xs font-semibold mb-0.5" style={{ color: displayColor }}>
-        {emoji} {label}
+    <div className="rounded-lg px-2 py-1.5 text-center" style={{ backgroundColor: displayBg }}>
+      <div className="flex items-center justify-center gap-1 mb-0.5">
+        <span className="text-[10px] font-semibold" style={{ color: displayColor }}>{label}</span>
+      </div>
+      <p className="text-[10px] leading-tight mb-1" style={{ color: esCero ? undefined : '#94A3B8' }}>
+        {esCero ? '✅ 0' : sub}
       </p>
-      <p className="text-xs mb-2" style={{ color: esCero ? undefined : '#94A3B8' }}>
-        {esCero ? '🏆 Excelente' : sub}
-      </p>
-      <p className="text-2xl font-bold" style={{ color: displayColor }}>{count}</p>
-      <p className="text-xs text-[#64748B]">
-        {esCero ? '0 uds · 0,00 €' : `${uds} uds · ${fmtCoste(coste)} €`}
+      <p className="text-lg font-bold leading-tight" style={{ color: displayColor }}>{count}</p>
+      <p className="text-[10px] text-[#64748B] leading-tight">
+        {esCero ? '0 uds' : `${uds} uds · ${fmtCoste(coste)}€`}
       </p>
     </div>
   );
 }
 
 // Mini pill para estados finales
-function MiniPill({ emoji, label, count, uds, coste, color = '#64748B', bg = '#F8FAFC' }: {
-  emoji: string; label: string; count: number; uds: number; coste: number; color?: string; bg?: string;
+function MiniPill({ label, count, uds, coste, color = '#64748B', bg = '#F8FAFC' }: {
+  label: string; count: number; uds: number; coste: number; color?: string; bg?: string;
 }) {
   if (count === 0) return null;
   return (
-    <div className="rounded-lg px-3 py-2 text-center" style={{ backgroundColor: bg }}>
-      <div className="flex items-center justify-center gap-1 mb-1">
-        <span className="text-sm">{emoji}</span>
-        <span className="text-xs font-medium" style={{ color }}>{label}</span>
-      </div>
-      <p className="text-lg font-bold" style={{ color }}>{count}</p>
-      <p className="text-xs text-[#94A3B8]">{fmtCoste(coste)} €</p>
+    <div className="rounded-md px-1.5 py-1 text-center" style={{ backgroundColor: bg }}>
+      <p className="text-[10px] font-medium leading-tight" style={{ color }}>{label}</p>
+      <p className="text-sm font-bold leading-tight" style={{ color }}>{count}</p>
+      <p className="text-[10px] text-[#94A3B8] leading-tight">{uds} uds · {fmtCoste(coste)}€</p>
     </div>
   );
 }

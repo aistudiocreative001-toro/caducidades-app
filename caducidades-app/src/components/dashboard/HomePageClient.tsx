@@ -100,7 +100,7 @@ export default function HomePageClient() {
             Selecciona una tienda para ver los productos
           </p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 items-start gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 items-start gap-4">
           {TIENDAS.map((tienda) => (
             <TiendaCard
               key={tienda.key}
