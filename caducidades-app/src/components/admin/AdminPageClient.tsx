@@ -7,10 +7,11 @@ import AdminKpis from './AdminKpis';
 import AdminFilters from './AdminFilters';
 import ProductoDrawer from '@/components/productos/ProductoDrawer';
 import RestoreModal from '@/components/backup/RestoreModal';
+import HistorialSesion, { type HistoryItem } from './HistorialSesion';
 import { ToastContainer, useToast } from '@/components/ui/Toast';
 import { TIENDAS } from '@/types/product';
 import type { Product } from '@/types/product';
-import { Edit, Trash2, Download, Upload, Plus, AlertCircle, ArrowLeft, RotateCcw, CloudDownload, Truck, Minus, Printer } from 'lucide-react';
+import { Edit, Trash2, Download, Upload, Plus, AlertCircle, ArrowLeft, RotateCcw, CloudDownload, Truck, Minus, Printer, History } from 'lucide-react';
 import Link from 'next/link';
 import Papa from 'papaparse';
 import { getEmojiCategoria } from '@/lib/emojis';
@@ -41,6 +42,9 @@ export default function AdminPageClient() {
   const [moverProduct, setMoverProduct] = useState<Product | null>(null);
   const [moverDestinos, setMoverDestinos] = useState<Record<string, number>>({});
   const [resetPass, setResetPass] = useState('');
+  const [showHistorial, setShowHistorial] = useState(false);
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [historyCounter, setHistoryCounter] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleResetDB = async () => {
@@ -60,6 +64,61 @@ export default function AdminPageClient() {
       addToast(e instanceof Error ? e.message : 'Error al resetear', 'error');
     }
   };
+
+  // --- Historial helpers ---
+  const addToHistory = (action: string, before: Product | null, after: Product) => {
+    const changes: { field: string; before: string; after: string }[] = [];
+    if (before) {
+      if (before.uds !== after.uds) changes.push({ field: 'Unidades', before: String(before.uds), after: String(after.uds) });
+      if (before.estado !== after.estado) changes.push({ field: 'Estado', before: before.estado, after: after.estado });
+      if (before.observaciones !== after.observaciones) changes.push({ field: 'Observaciones', before: before.observaciones, after: after.observaciones });
+      if (before.ubi !== after.ubi) changes.push({ field: 'Ubicación', before: before.ubi, after: after.ubi });
+      if (before.fecha !== after.fecha) changes.push({ field: 'Fecha', before: before.fecha, after: after.fecha });
+      if (before.coste !== after.coste) changes.push({ field: 'Coste', before: String(before.coste), after: String(after.coste) });
+      if (before.producto !== after.producto) changes.push({ field: 'Producto', before: before.producto, after: after.producto });
+      if (before.marca !== after.marca) changes.push({ field: 'Marca', before: before.marca, after: after.marca });
+      if (before.tipo !== after.tipo) changes.push({ field: 'Tipo', before: before.tipo, after: after.tipo });
+      if (before.sku !== after.sku) changes.push({ field: 'SKU', before: before.sku, after: after.sku });
+      if (before.tags !== after.tags) changes.push({ field: 'Tags', before: before.tags, after: after.tags });
+    }
+    const item: HistoryItem = {
+      id: `hist-${Date.now()}-${historyCounter}`,
+      timestamp: new Date().toISOString(),
+      producto: after,
+      action,
+      changes: changes.length > 0 ? changes : [{ field: 'Producto', before: action, after: 'Modificado' }],
+      fullBefore: before,
+    };
+    setHistory(prev => [item, ...prev]);
+    setHistoryCounter(c => c + 1);
+  };
+
+  const handleRestoreHistory = async (item: HistoryItem) => {
+    if (!item.fullBefore) {
+      addToast('No hay snapshot anterior para restaurar', 'error');
+      return;
+    }
+    try {
+      const res = await fetch('/api/products/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: item.fullBefore.id, data: item.fullBefore }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error');
+      addToast('Producto restaurado al estado anterior');
+      refetch();
+    } catch (e: any) {
+      addToast(e.message || 'Error al restaurar', 'error');
+    }
+  };
+
+  const handleClearHistory = () => {
+    if (!confirm('¿Borrar todo el historial de esta sesión?')) return;
+    setHistory([]);
+    addToast('Historial borrado');
+  };
+  // --- End Historial helpers ---
 
   const filtrados = useMemo(() => {
     let res = [...productos];
@@ -162,6 +221,7 @@ export default function AdminPageClient() {
 
   const handleDelete = async (id: string) => {
     if (!confirm('¿Eliminar este producto?')) return;
+    const before = productos.find(p => p.id === id) || null;
     try {
       const res = await fetch('/api/products/delete', {
         method: 'POST',
@@ -171,18 +231,23 @@ export default function AdminPageClient() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Error');
       addToast('Producto eliminado');
+      if (before) addToHistory('ELIMINAR', before, { ...before, uds: 0, estado: 'ELIMINADO' } as Product);
       refetch();
     } catch {
       addToast('Error al eliminar', 'error');
     }
   };
 
+  const [editingBefore, setEditingBefore] = useState<Product | null>(null);
+
   const openCreate = () => {
     setEditingProduct(null);
+    setEditingBefore(null);
     setDrawerOpen(true);
   };
 
   const openEdit = (p: Product) => {
+    setEditingBefore({ ...p });
     setEditingProduct(p);
     setDrawerOpen(true);
   };
@@ -238,6 +303,7 @@ export default function AdminPageClient() {
     const total = Object.values(moverDestinos).reduce((s, v) => s + (v || 0), 0);
     if (total === 0) { addToast('Debes mover al menos 1 unidad', 'error'); return; }
     if (total > moverProduct.uds) { addToast('No hay suficientes unidades', 'error'); return; }
+    const before = { ...moverProduct };
     try {
       const res = await fetch('/api/products/mover', {
         method: 'POST',
@@ -247,6 +313,11 @@ export default function AdminPageClient() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Error');
       addToast('Producto movido correctamente');
+      // Registrar en historial - obtener producto actualizado
+      const updatedRes = await fetch('/api/products', { cache: 'no-store' });
+      const all = await updatedRes.json();
+      const after = Array.isArray(all) ? all.find((p: Product) => p.id === moverProduct.id) : null;
+      if (after) addToHistory('MOVER', before, after);
       setMoverProduct(null);
       refetch();
     } catch (err: any) {
@@ -302,6 +373,12 @@ export default function AdminPageClient() {
             className="inline-flex items-center gap-2 px-4 py-2 border border-[#E2E8F0] text-[#475569] rounded-lg text-sm font-medium hover:bg-[#F1F5F9]"
           >
             <CloudDownload className="w-4 h-4" /> Restablecer cambios
+          </button>
+          <button
+            onClick={() => setShowHistorial(true)}
+            className="inline-flex items-center gap-2 px-4 py-2 border border-[#E2E8F0] text-[#475569] rounded-lg text-sm font-medium hover:bg-[#F1F5F9]"
+          >
+            <History className="w-4 h-4" /> Historial ({history.length})
           </button>
           <button
             onClick={() => setShowResetModal(true)}
@@ -478,9 +555,18 @@ export default function AdminPageClient() {
         isOpen={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         producto={editingProduct}
-        onSuccess={() => {
+        onSuccess={async () => {
           addToast(editingProduct ? 'Producto actualizado' : 'Producto creado');
-          refetch();
+          await refetch();
+          if (editingProduct && editingBefore) {
+            try {
+              const res = await fetch('/api/products', { cache: 'no-store' });
+              const all = await res.json();
+              const after = Array.isArray(all) ? all.find((p: Product) => p.id === editingProduct.id) : null;
+              if (after) addToHistory('EDITAR', editingBefore, after);
+            } catch {}
+            setEditingBefore(null);
+          }
         }}
       />
 
@@ -583,6 +669,14 @@ export default function AdminPageClient() {
           </div>
         </div>
       )}
+
+      <HistorialSesion
+        open={showHistorial}
+        onClose={() => setShowHistorial(false)}
+        history={history}
+        onRestore={handleRestoreHistory}
+        onClear={handleClearHistory}
+      />
 
       <ToastContainer toasts={toasts} removeToast={removeToast} />
 
