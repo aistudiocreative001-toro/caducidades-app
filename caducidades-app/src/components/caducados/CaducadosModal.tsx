@@ -11,6 +11,7 @@ interface CaducadosModalProps {
   productos: Product[];
   onAccept: () => void;
   onDismiss: () => void;
+  onResolve?: (p: Product, estado: string) => void;
 }
 
 const fmtMoney = (n: number) =>
@@ -24,10 +25,11 @@ const ESTADOS_RESOLUCION = [
   'ROTO',
 ];
 
-export default function CaducadosModal({ productos, onAccept, onDismiss }: CaducadosModalProps) {
+export default function CaducadosModal({ productos, onAccept, onDismiss, onResolve }: CaducadosModalProps) {
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [dimissed, setDimissed] = useState(false);
   const [items, setItems] = useState<Product[]>(productos);
+  const [resolvedCount, setResolvedCount] = useState(0);
 
   const totalCoste = items.reduce((sum, p) => sum + p.costeTotal, 0);
 
@@ -50,6 +52,9 @@ export default function CaducadosModal({ productos, onAccept, onDismiss }: Caduc
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Error al guardar');
+      // Callback para historial 
+      if (onResolve) onResolve(p, nuevoEstado);
+      setResolvedCount(c => c + 1);
       // Quitar de la lista local
       setItems(prev => prev.filter(x => x.id !== p.id));
     } catch (e) {
@@ -68,6 +73,10 @@ export default function CaducadosModal({ productos, onAccept, onDismiss }: Caduc
   const handleAcceptAll = () => {
     setDimissed(true);
     onAccept();
+    // Reportar cuántos se resolvieron
+    if (resolvedCount > 0 && onResolve) {
+      // onAccept se encarga del cierre
+    }
   };
 
   const tiendaColor = (ubi: string) => TIENDAS.find((t) => t.key === ubi)?.color || '#64748B';

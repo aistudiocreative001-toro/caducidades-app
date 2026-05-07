@@ -6,6 +6,7 @@ import TiendaCard from '@/components/tiendas/TiendaCard';
 import CaducadosModal from '@/components/caducados/CaducadosModal';
 import BackupModal from '@/components/backup/BackupModal';
 import { ToastContainer, useToast } from '@/components/ui/Toast';
+import { usePersistentHistory } from '@/hooks/useHistory';
 import { TIENDAS, type TiendaKey } from '@/types/product';
 import type { Product } from '@/types/product';
 
@@ -13,8 +14,10 @@ export default function HomePageClient() {
   const [productos, setProductos] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const { toasts, addToast, removeToast } = useToast();
+  const { addToHistory } = usePersistentHistory();
 
   const [dismissedCaducados, setDismissedCaducados] = useState(false);
+  const [caducadosResueltos, setCaducadosResueltos] = useState(0);
   const [showBackup, setShowBackup] = useState(false);
 
   const fetchProducts = async () => {
@@ -64,10 +67,14 @@ export default function HomePageClient() {
   });
 
   const handleCaducadosAccept = () => {
-    // Refrescar datos para que el modal desaparezca
     fetchProducts();
     setDismissedCaducados(true);
-    addToast(`${caducadosHoy.length} productos marcados como CADUCADO`);
+    if (caducadosResueltos > 0) {
+      addToast(`${caducadosResueltos} producto${caducadosResueltos > 1 ? 's' : ''} resuelto${caducadosResueltos > 1 ? 's' : ''}`);
+    } else {
+      addToast('Sin acciones realizadas');
+    }
+    setCaducadosResueltos(0);
   };
 
   if (loading) {
@@ -109,6 +116,11 @@ export default function HomePageClient() {
         productos={caducadosHoy}
         onAccept={handleCaducadosAccept}
         onDismiss={() => setDismissedCaducados(true)}
+        onResolve={(p, estado) => {
+          setCaducadosResueltos(c => c + 1);
+          const after = { ...p, estado };
+          addToHistory(`CADUCADOS: ${estado}`, p, after);
+        }}
       />
       <BackupModal open={showBackup} onClose={handleBackupClose} />
       <ToastContainer toasts={toasts} removeToast={removeToast} />
