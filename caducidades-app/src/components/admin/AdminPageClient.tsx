@@ -449,28 +449,51 @@ export default function AdminPageClient() {
                 </h3>
               </div>
               <span className="text-sm font-semibold text-[#DC2626]">
-                {costeCaducadosHoy.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €
+                Total: {costeCaducadosHoy.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €
               </span>
             </div>
-            <div className="max-h-64 overflow-y-auto space-y-2">
-              {caducadosHoy.map(p => (
-                <div
-                  key={p.id}
-                  className="flex items-center justify-between text-sm bg-white rounded-lg p-3 border border-[#FEE2E2]"
-                >
-                  <div className="min-w-0">
-                    <p className="font-medium text-[#0F172A] truncate">
-                      {isNA(p.producto) ? (p.observaciones || '(Sin nombre)') : p.producto}
-                    </p>
-                    <p className="text-xs text-[#64748B] mt-0.5">
-                      {p.ubi} · {p.fecha} · {p.uds} uds
-                    </p>
-                  </div>
-                  <span className="text-sm font-semibold text-[#DC2626] shrink-0 ml-4">
-                    {p.costeTotal.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €
-                  </span>
-                </div>
-              ))}
+            <div className="overflow-x-auto rounded-lg border border-[#FEE2E2]">
+              <table className="w-full text-sm">
+                <thead className="bg-[#FEE2E2] sticky top-0">
+                  <tr className="text-left">
+                    {['Ubicación','Producto','Marca','Cat.','Uds','Coste','Estado','Fecha','Días'].map(h => (
+                      <th key={h} className="px-3 py-2 font-semibold text-[#0F172A] text-[10px] uppercase tracking-wide whitespace-nowrap">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-[#FEE2E2]">
+                  {caducadosHoy.map(p => {
+                    const tiendaInfo = TIENDAS.find(t => t.key === p.ubi);
+                    const est = getEstadoStyle(p.estado);
+                    return (
+                      <tr key={p.id} className="hover:bg-[#FEF2F2]">
+                        <td className="px-3 py-2 whitespace-nowrap">
+                          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-semibold" style={{ backgroundColor: tiendaInfo?.color + '1A', color: tiendaInfo?.color }}>
+                            <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: tiendaInfo?.color }} />
+                            {tiendaInfo?.nombre || p.ubi}
+                          </span>
+                        </td>
+                        <td className="px-3 py-2 max-w-[160px] truncate" title={isNA(p.producto) ? (p.observaciones || 'Sin nombre') : p.producto}>
+                          {isNA(p.producto) ? (p.observaciones || 'Sin nombre') : p.producto}
+                        </td>
+                        <td className="px-3 py-2 whitespace-nowrap text-[#64748B]">{p.marca || '-'}</td>
+                        <td className="px-3 py-2 whitespace-nowrap text-[#64748B]">{p.tipo || '-'}</td>
+                        <td className="px-3 py-2 whitespace-nowrap font-semibold">{p.uds}</td>
+                        <td className="px-3 py-2 whitespace-nowrap font-semibold text-[#DC2626]">{p.costeTotal.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €</td>
+                        <td className="px-3 py-2 whitespace-nowrap">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold" style={{ backgroundColor: est.bg, color: est.color }}>
+                            {p.estado}
+                          </span>
+                        </td>
+                        <td className="px-3 py-2 whitespace-nowrap text-[#64748B]">{p.fecha}</td>
+                        <td className="px-3 py-2 whitespace-nowrap font-bold text-[#DC2626]">
+                          {p.dias != null ? `${p.dias} d` : '-'}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           </div>
         )}
