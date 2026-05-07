@@ -608,7 +608,7 @@ export default function AdminPageClient() {
             <table className="w-full text-sm">
               <thead className="bg-[#F8FAFC] border-b border-[#E2E8F0] sticky top-0">
                 <tr>
-                  <th className="px-3 py-3 text-left w-10">
+                  <th className="px-2 py-2 text-left w-10">
                     <input
                       type="checkbox"
                       checked={filtrados.length > 0 && selectedIds.size === filtrados.length}
@@ -618,14 +618,14 @@ export default function AdminPageClient() {
                   </th>
                   {[
                     { key: 'ubi', label: 'UBI' },
-                    { key: 'codigo', label: 'CÓDIGO' },
+                    { key: 'codigo', label: 'COD' },
                     { key: 'sku', label: 'SKU' },
                     { key: 'producto', label: 'PRODUCTO' },
                     { key: 'marca', label: 'MARCA' },
                     { key: 'tipo', label: 'TIPO' },
                     { key: 'coste', label: 'COSTE' },
                     { key: 'uds', label: 'UDS' },
-                    { key: 'costeTotal', label: 'COSTE TOTAL' },
+                    { key: 'costeTotal', label: 'TOTAL' },
                     { key: 'fecha', label: 'FECHA' },
                     { key: 'dias', label: 'DIAS' },
                     { key: 'estado', label: 'ESTADO' },
@@ -635,7 +635,7 @@ export default function AdminPageClient() {
                       <th
                         key={key}
                         onClick={() => setTableSort(prev => prev?.key === key ? { key, dir: prev.dir === 'asc' ? 'desc' : 'asc' } : { key, dir: 'asc' })}
-                        className="px-3 py-3 text-left text-xs font-semibold text-[#64748B] uppercase cursor-pointer select-none hover:text-[#1565C0] transition-colors whitespace-nowrap"
+                        className="px-2 py-2 text-left text-[10px] font-semibold text-[#64748B] uppercase cursor-pointer select-none hover:text-[#1565C0] transition-colors whitespace-nowrap"
                       >
                         <span className="inline-flex items-center gap-1">
                           {label}
@@ -648,13 +648,13 @@ export default function AdminPageClient() {
                       </th>
                     );
                   })}
-                  <th className="px-3 py-3 text-center text-xs font-semibold text-[#64748B] uppercase">ACCIÓN</th>
+                  <th className="px-2 py-2 text-center text-[10px] font-semibold text-[#64748B] uppercase">ACCIÓN</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#F1F5F9]">
                 {filtradosSorted.map(p => (
                   <tr key={p.id} className={`hover:bg-[#F8FAFC] transition-colors ${selectedIds.has(p.id) ? 'bg-[#F0F9FF]' : ''}`}>
-                    <td className="px-2 py-1.5">
+                    <td className="px-1.5 py-1">
                       <input
                         type="checkbox"
                         checked={selectedIds.has(p.id)}
@@ -662,46 +662,33 @@ export default function AdminPageClient() {
                         className="rounded border-[#E2E8F0]"
                       />
                     </td>
-                    <td className="px-2 py-1.5">
-                      <span className="inline-block w-4 h-4 rounded" style={{ backgroundColor: TIENDAS.find(t => t.key === p.ubi)?.color || '#ccc' }} />
+                    <td className="px-1.5 py-1">
+                      <span className="inline-block w-3 h-3 rounded-sm" style={{ backgroundColor: TIENDAS.find(t => t.key === p.ubi)?.color || '#ccc' }} />
                     </td>
-                    <td className="px-2 py-1.5 font-mono text-[#64748B] text-[10px] truncate max-w-[80px]" title={p.codigo}>{p.codigo.slice(0,10)}</td>
-                    <td className="px-2 py-1.5 font-mono text-[#64748B] text-[10px] truncate max-w-[60px]" title={p.sku}>{p.sku}</td>
-                    <td className="px-2 py-1.5 font-medium text-[#0F172A] text-[11px] truncate max-w-[180px]" title={isNA(p.producto) && p.observaciones ? p.observaciones : p.producto}>{isNA(p.producto) && p.observaciones ? p.observaciones : p.producto}</td>
-                    <td className="px-2 py-1.5 text-[#64748B] text-[11px] truncate max-w-[120px]" title={isNA(p.marca) && p.observaciones ? p.observaciones : p.marca}>{isNA(p.marca) && p.observaciones ? p.observaciones : p.marca}</td>
-                    <td className="px-2 py-1.5 text-[#64748B] text-[11px] truncate max-w-[120px]" title={isNA(p.tipo) && p.observaciones ? p.observaciones : p.tipo}>
+                    <td className="px-1.5 py-1 font-mono text-[#64748B] text-[10px] truncate max-w-[70px]" title={p.codigo}>{p.codigo.slice(0,8)}</td>
+                    <td className="px-1.5 py-1 font-mono text-[#64748B] text-[10px] truncate max-w-[50px]" title={p.sku}>{p.sku}</td>
+                    <td className="px-1.5 py-1 font-medium text-[#0F172A] text-[11px] truncate max-w-[140px]" title={isNA(p.producto) && p.observaciones ? p.observaciones : p.producto}>{isNA(p.producto) && p.observaciones ? p.observaciones : p.producto}</td>
+                    <td className="px-1.5 py-1 text-[#64748B] text-[11px] truncate max-w-[80px]" title={isNA(p.marca) && p.observaciones ? p.observaciones : p.marca}>{isNA(p.marca) && p.observaciones ? p.observaciones : p.marca}</td>
+                    <td className="px-1.5 py-1 text-[#64748B] text-[11px] truncate max-w-[80px]" title={isNA(p.tipo) && p.observaciones ? p.observaciones : p.tipo}>
                       {isNA(p.tipo) ? '' : getEmojiCategoria(p.tipo)} {isNA(p.tipo) && p.observaciones ? p.observaciones : p.tipo}
                     </td>
-                    <td className="px-2 py-1.5 text-right font-mono text-[11px]">{p.coste.toFixed(2)}</td>
-                    <td className="px-2 py-1.5 text-right font-bold text-[11px]">{p.uds}</td>
-                    <td className="px-2 py-1.5 text-right font-mono font-medium text-[11px]">{p.costeTotal.toFixed(2)}</td>
-                    <td className="px-2 py-1.5 text-[#64748B] text-[11px] truncate max-w-[90px]" title={p.fecha}>{p.fecha}</td>
-                    <td className={`px-2 py-1.5 font-bold text-[11px] ${p.dias <= 0 ? 'text-[#DC2626]' : p.dias <= 30 ? 'text-[#EA580C]' : 'text-[#059669]'}`}>{p.dias}</td>
-                    <td className="px-2 py-1.5">
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium"
+                    <td className="px-1.5 py-1 text-right font-mono text-[11px]">{p.coste.toFixed(2)}</td>
+                    <td className="px-1.5 py-1 text-right font-bold text-[11px]">{p.uds}</td>
+                    <td className="px-1.5 py-1 text-right font-mono font-medium text-[11px]">{p.costeTotal.toFixed(2)}</td>
+                    <td className="px-1.5 py-1 text-[#64748B] text-[11px] truncate max-w-[75px]" title={p.fecha}>{p.fecha}</td>
+                    <td className={`px-1.5 py-1 font-bold text-[11px] ${p.dias <= 0 ? 'text-[#DC2626]' : p.dias <= 30 ? 'text-[#EA580C]' : 'text-[#059669]'}`}>{p.dias}</td>
+                    <td className="px-1.5 py-1">
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium"
                         style={{ backgroundColor: getEstadoStyle(p.estado).bg, color: getEstadoStyle(p.estado).color }}
                       >
                         {p.estado}
                       </span>
                     </td>
-                    <td className="px-2 py-1.5 text-center">
-                      <div className="flex items-center justify-center gap-2">
-                        {p.observaciones && p.observaciones.trim() !== '' && p.observaciones !== '#N/A' ? (
-                          <span className="cursor-help" title={p.observaciones}>
-                            <svg className="w-4 h-4 text-[#1565C0]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                          </span>
-                        ) : (
-                          <span title="Sin observaciones">
-                            <svg className="w-4 h-4 text-[#CBD5E1]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                          </span>
-                        )}
-                        <button onClick={() => openEdit(p)} className="text-[#94A3B8] hover:text-[#1565C0] transition-colors"><Edit className="w-4 h-4" /></button>
-                        <button onClick={() => openMover(p)} className="text-[#94A3B8] hover:text-[#FB8C00] transition-colors" title="Mover"><Truck className="w-4 h-4" /></button>
-                        <button onClick={() => handleDelete(p.id)} className="text-[#94A3B8] hover:text-[#DC2626] transition-colors"><Trash2 className="w-4 h-4" /></button>
+                    <td className="px-1.5 py-1 text-center">
+                      <div className="flex items-center justify-center gap-1.5">
+                        <button onClick={() => openEdit(p)} className="text-[#94A3B8] hover:text-[#1565C0] transition-colors" title="Editar"><Edit className="w-3.5 h-3.5" /></button>
+                        <button onClick={() => openMover(p)} className="text-[#94A3B8] hover:text-[#FB8C00] transition-colors" title="Mover"><Truck className="w-3.5 h-3.5" /></button>
+                        <button onClick={() => handleDelete(p.id)} className="text-[#94A3B8] hover:text-[#DC2626] transition-colors" title="Eliminar"><Trash2 className="w-3.5 h-3.5" /></button>
                       </div>
                     </td>
                   </tr>
