@@ -49,6 +49,12 @@ export default function AdminPageClient() {
   const [historyCounter, setHistoryCounter] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Delete password modal
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [deletePass, setDeletePass] = useState('');
+  const [deleteError, setDeleteError] = useState('');
+
   // Dropdown states
   const [showImportExport, setShowImportExport] = useState(false);
   const [showRestoreReset, setShowRestoreReset] = useState(false);

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { AlertTriangle, Package, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Product } from '@/types/product';
-import { TIENDAS } from '@/types/product';
+import { TIENDAS, ESTADOS_FIJOS } from '@/types/product';
 import { getEstadoStyle } from '@/lib/estado-colors';
 
 interface CaducadosModalProps {
@@ -16,12 +16,29 @@ interface CaducadosModalProps {
 const fmtMoney = (n: number) =>
   n.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
+const ESTADOS_OPCIONES = [
+  'VIGENTE',
+  'EN RIESGO',
+  'CADUCADO',
+  'ROTO',
+  'VENDIDO',
+  'VENDIDO CADUCADO',
+  'REGALO CADUCADO',
+  'MOVIDO',
+  'MOSTRADOR',
+];
+
 export default function CaducadosModal({ productos, onAccept, onDismiss }: CaducadosModalProps) {
   const [loading, setLoading] = useState(false);
   const [dimissed, setDimissed] = useState(false);
   const [needsPassword, setNeedsPassword] = useState(false);
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [estados, setEstados] = useState<Record<string, string>>(() => {
+    const map: Record<string, string> = {};
+    productos.forEach(p => { map[p.id] = p.estado; });
+    return map;
+  });
 
   const totalCoste = productos.reduce((sum, p) => sum + p.costeTotal, 0);
 
@@ -38,11 +55,11 @@ export default function CaducadosModal({ productos, onAccept, onDismiss }: Caduc
     }
     setLoading(true);
     try {
-      const ids = productos.map((p) => p.id);
+      const items = productos.map(p => ({ id: p.id, estado: estados[p.id] }));
       const res = await fetch('/api/products/caducar-batch', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ids }),
+        body: JSON.stringify({ items }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Error al guardar');
@@ -106,7 +123,7 @@ export default function CaducadosModal({ productos, onAccept, onDismiss }: Caduc
                 {productos.map((p) => (
                   <div
                     key={p.id}
-                    className="flex items-center gap-4 rounded-xl border border-[#E2E8F0] bg-white p-3 hover:shadow-sm transition-shadow"
+                    className="flex items-center gap-3 rounded-xl border border-[#E2E8F0] bg-white p-3 hover:shadow-sm transition-shadow"
                   >
                     {/* Store color strip */}
                     <div
@@ -125,12 +142,7 @@ export default function CaducadosModal({ productos, onAccept, onDismiss }: Caduc
                       <p className="text-sm font-semibold text-[#0F172A] truncate">
                         {p.producto || p.observaciones || '(Sin nombre)'}
                       </p>
-                      <div className="flex flex-wrap items-center gap-x-4 gap-y-0.5 mt-1 text-xs text-[#64748B]">
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium"
-                          style={{ backgroundColor: getEstadoStyle(p.estado).bg, color: getEstadoStyle(p.estado).color }}
-                        >
-                          {p.estado}
-                        </span>
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-1 text-xs text-[#64748B]">
                         <span>
                           <span className="text-[#94A3B8]">Fecha:</span>{' '}
                           <span className="font-medium text-[#475569]">{p.fecha}</span>
@@ -154,9 +166,23 @@ export default function CaducadosModal({ productos, onAccept, onDismiss }: Caduc
                       </div>
                     </div>
 
-                    {/* Days badge */}
-                    <div className="shrink-0">
-                      <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-[#FEE2E2] text-[#DC2626]">
+                    {/* Estado Select */}
+                    <div className="shrink-0 flex flex-col items-end gap-1">
+                      <select
+                        value={estados[p.id]}
+                        onChange={(e) => setEstados(prev => ({ ...prev, [p.id]: e.target.value }))}
+                        className="text-xs font-semibold px-2 py-1 rounded-md border cursor-pointer focus:outline-none"
+                        style={{
+                          backgroundColor: getEstadoStyle(estados[p.id]).bg,
+                          color: getEstadoStyle(estados[p.id]).color,
+                          borderColor: getEstadoStyle(estados[p.id]).color + '40',
+                        }}
+                      >
+                        {ESTADOS_OPCIONES.map(est => (
+                          <option key={est} value={est}>{est}</option>
+                        ))}
+                      </select>
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-bold bg-[#FEE2E2] text-[#DC2626]">
                         {p.dias} d
                       </span>
                     </div>
@@ -169,7 +195,7 @@ export default function CaducadosModal({ productos, onAccept, onDismiss }: Caduc
             <div className="p-4 sm:p-6 border-t border-[#E2E8F0] bg-[#FAFAFA]">
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                 <p className="text-xs text-[#64748B] shrink-0">
-                  Se marcarán como <span className="font-semibold text-[#DC2626]">CADUCADO</span>
+                  Se marcarán con los estados seleccionados
                 </p>
                 <div className="flex items-center gap-3">
                   {!needsPassword ? (
