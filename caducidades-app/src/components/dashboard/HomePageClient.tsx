@@ -5,6 +5,7 @@ import AppBar from '@/components/layout/AppBar';
 import TiendaCard from '@/components/tiendas/TiendaCard';
 import CaducadosModal from '@/components/caducados/CaducadosModal';
 import BackupModal from '@/components/backup/BackupModal';
+import RankingPodio from './RankingPodio';
 import { ToastContainer, useToast } from '@/components/ui/Toast';
 import { usePersistentHistory } from '@/hooks/useHistory';
 import { TIENDAS, type TiendaKey } from '@/types/product';
@@ -92,7 +93,7 @@ export default function HomePageClient() {
     <div className="min-h-full flex flex-col">
       <AppBar showAdmin={true} />
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-        <div className="mb-8">
+        <div className="mb-6">
           <h1 className="text-2xl font-bold text-[#0F172A] mb-2">
             Caducidades
           </h1>
@@ -100,6 +101,9 @@ export default function HomePageClient() {
             Selecciona una tienda para ver los productos
           </p>
         </div>
+
+        <RankingPodio productos={productos} />
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 items-start gap-4">
           {TIENDAS.map((tienda) => (
             <TiendaCard
