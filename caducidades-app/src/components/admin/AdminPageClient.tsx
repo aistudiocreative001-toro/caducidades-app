@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getProducts } from '@/app/actions/products';
 import AdminKpis from './AdminKpis';
@@ -46,6 +46,26 @@ export default function AdminPageClient() {
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [historyCounter, setHistoryCounter] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Dropdown states
+  const [showImportExport, setShowImportExport] = useState(false);
+  const [showRestoreReset, setShowRestoreReset] = useState(false);
+  const importExportRef = useRef<HTMLDivElement>(null);
+  const restoreResetRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdowns on outside click
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (importExportRef.current && !importExportRef.current.contains(e.target as Node)) {
+        setShowImportExport(false);
+      }
+      if (restoreResetRef.current && !restoreResetRef.current.contains(e.target as Node)) {
+        setShowRestoreReset(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleResetDB = async () => {
     try {
@@ -367,25 +387,56 @@ export default function AdminPageClient() {
           >
             <AlertCircle className="w-4 h-4" /> Caducados a fecha ({caducadosHoy.length}) · {costeCaducadosHoy.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €
           </button>
-          <button onClick={() => fileInputRef.current?.click()} className="inline-flex items-center gap-2 px-4 py-2 border border-[#E2E8F0] rounded-lg text-sm font-medium text-[#475569] hover:bg-[#F1F5F9]">
-            <Upload className="w-4 h-4" /> Importar CSV
-          </button>
+          <div ref={importExportRef} className="relative inline-block">
+            <button
+              onClick={() => setShowImportExport(v => !v)}
+              className="inline-flex items-center gap-2 px-4 py-2 border border-[#E2E8F0] text-[#475569] rounded-lg text-sm font-medium hover:bg-[#F1F5F9]"
+            >
+              <Upload className="w-4 h-4" /> Import/Export
+            </button>
+            {showImportExport && (
+              <div className="absolute left-0 mt-1 bg-white border border-[#E2E8F0] rounded-lg shadow-lg w-48 z-50 overflow-hidden">
+                <button
+                  onClick={() => { fileInputRef.current?.click(); setShowImportExport(false); }}
+                  className="w-full text-left px-4 py-2.5 text-sm text-[#0F172A] hover:bg-[#F1F5F9] flex items-center gap-2"
+                >
+                  <Upload className="w-4 h-4 text-[#64748B]" /> Importar CSV
+                </button>
+                <button
+                  onClick={() => { handleExport(); setShowImportExport(false); }}
+                  className="w-full text-left px-4 py-2.5 text-sm text-[#0F172A] hover:bg-[#F1F5F9] flex items-center gap-2"
+                >
+                  <Download className="w-4 h-4 text-[#64748B]" /> Exportar Excel
+                </button>
+              </div>
+            )}
+          </div>
           <input type="file" accept=".csv" ref={fileInputRef} onChange={handleImport} className="hidden" />
-          <button onClick={handleExport} className="inline-flex items-center gap-2 px-4 py-2 border border-[#E2E8F0] rounded-lg text-sm font-medium text-[#475569] hover:bg-[#F1F5F9]">
-            <Download className="w-4 h-4" /> Exportar Excel
-          </button>
-          <button
-            onClick={() => setShowRestoreModal(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 border border-[#E2E8F0] text-[#475569] rounded-lg text-sm font-medium hover:bg-[#F1F5F9]"
-          >
-            <CloudDownload className="w-4 h-4" /> Restablecer cambios
-          </button>
-          <button
-            onClick={() => setShowResetModal(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 border border-[#FEE2E2] text-[#DC2626] rounded-lg text-sm font-medium hover:bg-[#FEF2F2]"
-          >
-            <RotateCcw className="w-4 h-4" /> Resetear BBDD
-          </button>
+
+          <div ref={restoreResetRef} className="relative inline-block">
+            <button
+              onClick={() => setShowRestoreReset(v => !v)}
+              className="inline-flex items-center gap-2 px-4 py-2 border border-[#E2E8F0] text-[#475569] rounded-lg text-sm font-medium hover:bg-[#F1F5F9]"
+            >
+              <CloudDownload className="w-4 h-4" /> Datos
+            </button>
+            {showRestoreReset && (
+              <div className="absolute left-0 mt-1 bg-white border border-[#E2E8F0] rounded-lg shadow-lg w-48 z-50 overflow-hidden">
+                <button
+                  onClick={() => { setShowRestoreModal(true); setShowRestoreReset(false); }}
+                  className="w-full text-left px-4 py-2.5 text-sm text-[#0F172A] hover:bg-[#F1F5F9] flex items-center gap-2"
+                >
+                  <CloudDownload className="w-4 h-4 text-[#1565C0]" /> Restablecer cambios
+                </button>
+                <button
+                  onClick={() => { setShowResetModal(true); setShowRestoreReset(false); }}
+                  className="w-full text-left px-4 py-2.5 text-sm text-[#DC2626] hover:bg-[#FEF2F2] flex items-center gap-2"
+                >
+                  <RotateCcw className="w-4 h-4" /> Resetear BBDD
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         {showCaducadosHoy && caducadosHoy.length > 0 && (
