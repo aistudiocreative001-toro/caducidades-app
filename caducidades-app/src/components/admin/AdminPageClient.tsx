@@ -30,9 +30,9 @@ export default function AdminPageClient() {
   const { toasts, addToast, removeToast } = useToast();
 
   const [busqueda, setBusqueda] = useState('');
-  const [tienda, setTienda] = useState('');
-  const [categoria, setCategoria] = useState('');
-  const [estado, setEstado] = useState('');
+  const [tienda, setTienda] = useState<string[]>([]);
+  const [categoria, setCategoria] = useState<string[]>([]);
+  const [estado, setEstado] = useState<string[]>([]);
   const [rangoDias, setRangoDias] = useState('');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -126,12 +126,11 @@ export default function AdminPageClient() {
         p.marca.toLowerCase().includes(q)
       );
     }
-    if (tienda) res = res.filter(p => p.ubi === tienda);
-    if (categoria) res = res.filter(p => p.tipo === categoria);
-    if (estado) res = res.filter(p => p.estado === estado);
+    if (tienda.length > 0) res = res.filter(p => tienda.includes(p.ubi));
+    if (categoria.length > 0) res = res.filter(p => categoria.includes(p.tipo));
+    if (estado.length > 0) res = res.filter(p => estado.includes(p.estado));
     if (rangoDias) {
       res = res.filter(p => {
-        // Solo productos con dias >= 0 (no caducados aun)
         if (p.dias < 0) return false;
         if (rangoDias === 'critico') return p.dias < 10;
         if (rangoDias === 'urgente') return p.dias >= 10 && p.dias < 30;

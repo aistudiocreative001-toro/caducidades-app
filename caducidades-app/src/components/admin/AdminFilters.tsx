@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Search, MapPin, Package, CalendarDays, Tag } from 'lucide-react';
 import { TIENDAS, TIPOS_CATEGORIA } from '@/types/product';
 import { getEmojiCategoria } from '@/lib/emojis';
@@ -9,12 +9,12 @@ import { getEstadoStyle } from '@/lib/estado-colors';
 interface AdminFiltersProps {
   busqueda: string;
   onBusquedaChange: (v: string) => void;
-  tienda: string;
-  onTiendaChange: (v: string) => void;
-  categoria: string;
-  onCategoriaChange: (v: string) => void;
-  estado: string;
-  onEstadoChange: (v: string) => void;
+  tienda: string[];
+  onTiendaChange: (v: string[]) => void;
+  categoria: string[];
+  onCategoriaChange: (v: string[]) => void;
+  estado: string[];
+  onEstadoChange: (v: string[]) => void;
   rangoDias: string;
   onRangoDiasChange: (v: string) => void;
 }
@@ -23,6 +23,116 @@ const ESTADOS_OPCIONES = [
   'VIGENTE', 'EN RIESGO', 'CADUCADO', 'ROTO', 'VENDIDO', 'VENDIDO CADUCADO', 'REGALO CADUCADO', 'MOVIDO', 'MOSTRADOR'
 ];
 
+function MultiSelectDropdown({
+  label,
+  options,
+  selected,
+  onChange,
+  getColor,
+  getLabel,
+  icon,
+}: {
+  label: string;
+  options: string[];
+  selected: string[];
+  onChange: (v: string[]) => void;
+  getColor?: (v: string) => string;
+  getLabel?: (v: string) => string;
+  icon?: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const toggle = (val: string) => {
+    if (selected.includes(val)) {
+      onChange(selected.filter((s) => s !== val));
+    } else {
+      onChange([...selected, val]);
+    }
+  };
+
+  const clear = () => onChange([]);
+
+  const display =
+    selected.length === 0
+      ? label
+      : selected.length === 1
+      ? (getLabel ? getLabel(selected[0]) : selected[0])
+      : `${selected.length} seleccionados`;
+
+  const dotColor =
+    selected.length === 1 && getColor
+      ? getColor(selected[0])
+      : selected.length > 1
+      ? '#1565C0'
+      : '#CBD5E1';
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-2 px-3 py-2 border border-[#E2E8F0] rounded-lg text-sm bg-white min-w-[180px] hover:bg-[#F8FAFC]"
+      >
+        {icon}
+        <span
+          className="inline-block w-2.5 h-2.5 rounded-full shrink-0"
+          style={{ backgroundColor: dotColor }}
+        />
+        <span className="flex-1 text-left truncate">{display}</span>
+        <svg className="w-3 h-3 text-[#64748B] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {open && (
+        <div className="absolute z-50 mt-1 bg-white border border-[#E2E8F0] rounded-lg shadow-lg min-w-[240px] max-h-72 overflow-y-auto p-2">
+          <div className="flex items-center justify-between px-2 py-1 mb-1">
+            <span className="text-xs font-semibold text-[#64748B] uppercase">{label}</span>
+            {selected.length > 0 && (
+              <button onClick={clear} className="text-xs text-[#DC2626] hover:underline">
+                Limpiar
+              </button>
+            )}
+          </div>
+          {options.map((opt) => {
+            const isSelected = selected.includes(opt);
+            return (
+              <label
+                key={opt}
+                className={`flex items-center gap-2 px-2 py-1.5 rounded cursor-pointer text-sm hover:bg-[#F1F5F9] ${isSelected ? 'bg-[#F0F9FF]' : ''}`}
+              >
+                <input
+                  type="checkbox"
+                  checked={isSelected}
+                  onChange={() => toggle(opt)}
+                  className="rounded border-[#E2E8F0] accent-[#1565C0]"
+                />
+                {getColor && (
+                  <span
+                    className="inline-block w-2.5 h-2.5 rounded-full shrink-0"
+                    style={{ backgroundColor: getColor(opt) }}
+                  />
+                )}
+                <span className={getColor ? '' : 'text-[#0F172A]'} style={getColor ? { color: getColor(opt) } : undefined}>
+                  {getLabel ? getLabel(opt) : opt}
+                </span>
+              </label>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function AdminFilters({
   busqueda, onBusquedaChange,
   tienda, onTiendaChange,
@@ -30,12 +140,6 @@ export default function AdminFilters({
   estado, onEstadoChange,
   rangoDias, onRangoDiasChange,
 }: AdminFiltersProps) {
-  const [estadoOpen, setEstadoOpen] = useState(false);
-  const [tiendaOpen, setTiendaOpen] = useState(false);
-  const tiendaSeleccionada = TIENDAS.find(t => t.key === tienda);
-  const estadoLabel = estado || 'Todos los estados';
-  const estadoColor = estado ? getEstadoStyle(estado).color : '#64748B';
-
   return (
     <div className="space-y-3 mb-4">
       <div className="flex items-center gap-2">
@@ -49,110 +153,34 @@ export default function AdminFilters({
         />
       </div>
 
-      <div className="flex flex-wrap gap-3">
-        {/* Custom Tienda dropdown with colors */}
-        <div className="flex items-center gap-2 relative">
-          <MapPin className="w-4 h-4 text-[#64748B]" />
-          <div className="relative">
-            <button
-              onClick={() => setTiendaOpen(!tiendaOpen)}
-              className="flex items-center gap-2 px-3 py-2 border border-[#E2E8F0] rounded-lg text-sm focus:outline-none focus:border-[#1565C0] bg-white min-w-[180px]"
-            >
-              <span
-                className="inline-block w-2.5 h-2.5 rounded-full shrink-0"
-                style={{ backgroundColor: tiendaSeleccionada?.color || '#CBD5E1' }}
-              />
-              <span className="flex-1 text-left truncate">{tiendaSeleccionada?.nombre || 'Todas las tiendas'}</span>
-              <svg className="w-3 h-3 text-[#64748B] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
+      <div className="flex flex-wrap gap-3 items-center">
+        <MultiSelectDropdown
+          label="Todas las tiendas"
+          options={TIENDAS.map((t) => t.key)}
+          selected={tienda}
+          onChange={onTiendaChange}
+          getColor={(k) => TIENDAS.find((t) => t.key === k)?.color || '#CBD5E1'}
+          getLabel={(k) => TIENDAS.find((t) => t.key === k)?.nombre || k}
+          icon={<MapPin className="w-4 h-4 text-[#64748B]" />}
+        />
 
-            {tiendaOpen && (
-              <div className="absolute z-50 mt-1 bg-white border border-[#E2E8F0] rounded-lg shadow-lg w-full min-w-[220px] max-h-64 overflow-y-auto">
-                <div
-                  className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-[#F1F5F9] text-sm text-[#64748B] border-b border-[#E2E8F0]"
-                  onClick={() => { onTiendaChange(''); setTiendaOpen(false); }}
-                >
-                  <span className="w-2.5 h-2.5 rounded-full shrink-0 bg-[#CBD5E1]" />
-                  Todas las tiendas
-                </div>
-                {TIENDAS.map(t => (
-                  <div
-                    key={t.key}
-                    className={`flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-[#F1F5F9] text-sm ${tienda === t.key ? 'font-semibold bg-[#F0F9FF]' : ''}`}
-                    onClick={() => { onTiendaChange(t.key); setTiendaOpen(false); }}
-                  >
-                    <span
-                      className="inline-block w-2.5 h-2.5 rounded-full shrink-0"
-                      style={{ backgroundColor: t.color }}
-                    />
-                    {t.nombre}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
+        <MultiSelectDropdown
+          label="Todas las categorías"
+          options={TIPOS_CATEGORIA}
+          selected={categoria}
+          onChange={onCategoriaChange}
+          getLabel={(c) => `${getEmojiCategoria(c)} ${c}`}
+          icon={<Package className="w-4 h-4 text-[#64748B]" />}
+        />
 
-        <div className="flex items-center gap-2">
-          <Package className="w-4 h-4 text-[#64748B]" />
-          <select
-            value={categoria}
-            onChange={(e) => onCategoriaChange(e.target.value)}
-            className="px-3 py-2 border border-[#E2E8F0] rounded-lg text-sm focus:outline-none focus:border-[#1565C0]"
-          >
-            <option value="">Todas las categorías</option>
-            {TIPOS_CATEGORIA.map(c => (
-              <option key={c} value={c}>{getEmojiCategoria(c)} {c}</option>
-            ))}
-          </select>
-        </div>
-
-        {/* Custom Estado dropdown with colors */}
-        <div className="flex items-center gap-2 relative">
-          <Tag className="w-4 h-4 text-[#64748B]" />
-          <div className="relative">
-            <button
-              onClick={() => setEstadoOpen(!estadoOpen)}
-              className="flex items-center gap-2 px-3 py-2 border border-[#E2E8F0] rounded-lg text-sm focus:outline-none focus:border-[#1565C0] bg-white min-w-[180px]"
-            >
-              <span
-                className="inline-block w-2.5 h-2.5 rounded-full shrink-0"
-                style={{ backgroundColor: estadoColor }}
-              />
-              <span className="flex-1 text-left truncate">{estadoLabel}</span>
-              <svg className="w-3 h-3 text-[#64748B] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-
-            {estadoOpen && (
-              <div className="absolute z-50 mt-1 bg-white border border-[#E2E8F0] rounded-lg shadow-lg w-full min-w-[220px] max-h-64 overflow-y-auto">
-                <div
-                  className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-[#F1F5F9] text-sm text-[#64748B] border-b border-[#E2E8F0]"
-                  onClick={() => { onEstadoChange(''); setEstadoOpen(false); }}
-                >
-                  <span className="w-2.5 h-2.5 rounded-full shrink-0 bg-[#CBD5E1]" />
-                  Todos los estados
-                </div>
-                {ESTADOS_OPCIONES.map(e => (
-                  <div
-                    key={e}
-                    className={`flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-[#F1F5F9] text-sm ${estado === e ? 'font-semibold bg-[#F0F9FF]' : ''}`}
-                    onClick={() => { onEstadoChange(e); setEstadoOpen(false); }}
-                  >
-                    <span
-                      className="inline-block w-2.5 h-2.5 rounded-full shrink-0"
-                      style={{ backgroundColor: getEstadoStyle(e).color }}
-                    />
-                    <span style={{ color: getEstadoStyle(e).color }}>{e}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
+        <MultiSelectDropdown
+          label="Todos los estados"
+          options={ESTADOS_OPCIONES}
+          selected={estado}
+          onChange={onEstadoChange}
+          getColor={(e) => getEstadoStyle(e).color}
+          icon={<Tag className="w-4 h-4 text-[#64748B]" />}
+        />
 
         <div className="flex items-center gap-2">
           <CalendarDays className="w-4 h-4 text-[#64748B]" />
@@ -163,8 +191,8 @@ export default function AdminFilters({
           >
             <option value="">Todos los días</option>
             <option value="critico">{'🔥 CRÍTICO (<10 días)'}</option>
-            <option value="urgente">⚠️ URGENTE (10-30 días)</option>
-            <option value="prioritario">📅 PRIORITARIO (30-60 días)</option>
+            <option value="urgente">{'⚠️ URGENTE (10-30 días)'}</option>
+            <option value="prioritario">{'📅 PRIORITARIO (30-60 días)'}</option>
           </select>
         </div>
       </div>
