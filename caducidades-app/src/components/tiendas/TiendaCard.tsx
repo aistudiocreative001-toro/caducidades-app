@@ -31,7 +31,8 @@ function TiendaCard({ tiendaKey, nombre, color, productos }: TiendaCardProps) {
   const criticoList = activos.filter(p => p.dias != null && p.dias >= 0 && p.dias < 10);
   const urgenteList = activos.filter(p => p.dias != null && p.dias >= 10 && p.dias < 30);
   const prioritarioList = activos.filter(p => p.dias != null && p.dias >= 30 && p.dias < 60);
-  const vigenteList = activos.filter(p => p.dias != null && p.dias >= 60);
+  const recomendadoList = activos.filter(p => p.dias != null && p.dias >= 60 && p.dias < 90);
+  const vigenteList = activos.filter(p => p.dias != null && p.dias >= 90);
 
   const makeMetrics = (list: Product[]) => ({
     count: list.length,
@@ -42,6 +43,7 @@ function TiendaCard({ tiendaKey, nombre, color, productos }: TiendaCardProps) {
   const critico = makeMetrics(criticoList);
   const urgente = makeMetrics(urgenteList);
   const prioritario = makeMetrics(prioritarioList);
+  const recomendado = makeMetrics(recomendadoList);
   const vigente = makeMetrics(vigenteList);
 
   const estadosDesplegable = ['CADUCADO', 'VENDIDO CADUCADO', 'REGALO CADUCADO', 'VENDIDO', 'ROTO', 'MOVIDO', 'MOSTRADOR', '#N/A'];
@@ -59,7 +61,7 @@ function TiendaCard({ tiendaKey, nombre, color, productos }: TiendaCardProps) {
   const get = (est: string) => grupos[est.toUpperCase()] || { count: 0, uds: 0, coste: 0 };
 
   const totalUds = activos.reduce((s, p) => s + p.uds, 0);
-  const totalCoste = critico.coste + urgente.coste + prioritario.coste + vigente.coste;
+  const totalCoste = critico.coste + urgente.coste + prioritario.coste + recomendado.coste + vigente.coste;
 
   const bgColor = `${color}1A`;
 
@@ -112,7 +114,12 @@ function TiendaCard({ tiendaKey, nombre, color, productos }: TiendaCardProps) {
                 color="#D97706" bg="#FEF3C7"
               />
               <RangoMini
-                label="Vigente" sub="≥60 d"
+                label="Recomendado" sub="60-90 d"
+                count={recomendado.count} uds={recomendado.uds} coste={recomendado.coste}
+                color="#06B6D4" bg="#ECFEFF"
+              />
+              <RangoMini
+                label="Vigente" sub="≥90 d"
                 count={vigente.count} uds={vigente.uds} coste={vigente.coste}
                 color="#1565C0" bg="#DBEAFE"
               />

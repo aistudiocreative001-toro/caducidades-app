@@ -8,7 +8,7 @@ import { TIENDAS, TIPOS_CATEGORIA } from '@/types/product';
 import { useToast } from '@/components/ui/Toast';
 import { getEstadoStyle } from '@/lib/estado-colors';
 
-const ESTADOS_PREDEFINIDOS = ['VIGENTE', 'EN RIESGO', 'CADUCADO', 'ROTO', 'VENDIDO', 'VENDIDO CADUCADO', 'REGALO CADUCADO', 'MOVIDO', 'MOSTRADOR'];
+const ESTADOS_PREDEFINIDOS = ['VIGENTE', 'EN RIESGO', 'RECOMENDADO', 'CADUCADO', 'ROTO', 'VENDIDO', 'VENDIDO CADUCADO', 'REGALO CADUCADO', 'MOVIDO', 'MOSTRADOR'];
 
 interface ProductoDrawerProps {
   isOpen: boolean;

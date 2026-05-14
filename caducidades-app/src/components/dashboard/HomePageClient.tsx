@@ -129,20 +129,24 @@ export default function HomePageClient() {
               <h3 className="font-semibold text-[#0F172A]">Métricas del ranking</h3>
               <ul className="space-y-2 text-[#64748B]">
                 <li className="flex items-start gap-2">
-                  <span className="inline-block w-2 h-2 rounded-full bg-[#059669] mt-1.5 shrink-0" />
-                  <span><strong className="text-[#0F172A]">Uds activas:</strong> Productos con fecha vigente y estado abierto. Cuanto más stock activo, mejor puntuación.</span>
-                </li>
-                <li className="flex items-start gap-2">
                   <span className="inline-block w-2 h-2 rounded-full bg-[#DC2626] mt-1.5 shrink-0" />
-                  <span><strong className="text-[#0F172A]">Crítico (&lt;10 días):</strong> Productos a punto de caducar. Restan puntos porque representan pérdida inminente.</span>
+                  <span><strong className="text-[#0F172A]">Crítico (&lt;10 días):</strong> Penalización ×4. Productos a punto de caducar. Impacta fuertemente la puntuación.</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="inline-block w-2 h-2 rounded-full bg-[#EA580C] mt-1.5 shrink-0" />
-                  <span><strong className="text-[#0F172A]">Urgente (10-30 días):</strong> Productos con poco margen. También restan, aunque menos que los críticos.</span>
+                  <span><strong className="text-[#0F172A]">Urgente (10-30 días):</strong> Penalización ×3. Productos con poco margen. También resta, aunque menos que los críticos.</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="inline-block w-2 h-2 rounded-full bg-[#D97706] mt-1.5 shrink-0" />
-                  <span><strong className="text-[#0F172A]">Prioritario (30-60 días):</strong> Deben planificarse promociones o movimientos antes de que entren en urgencia.</span>
+                  <span><strong className="text-[#0F172A]">Prioritario (30-60 días):</strong> Penalización ×2. Deben planificarse movimientos antes de que entren en urgencia.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="inline-block w-2 h-2 rounded-full bg-[#06B6D4] mt-1.5 shrink-0" />
+                  <span><strong className="text-[#0F172A]">Recomendado (60-90 días):</strong> Penalización ×1. Productos que conviene empezar a mover. El último nivel antes de vigente.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="inline-block w-2 h-2 rounded-full bg-[#059669] mt-1.5 shrink-0" />
+                  <span><strong className="text-[#0F172A]">Vigente (≥90 días):</strong> Sin penalización. No entra en el ranking, que solo mide riesgo &lt;90 días.</span>
                 </li>
               </ul>
             </div>
@@ -152,19 +156,19 @@ export default function HomePageClient() {
               <ul className="space-y-2 text-[#64748B]">
                 <li className="flex items-start gap-2">
                   <span className="text-[#1565C0] font-bold mt-0.5">1.</span>
-                  <span><strong className="text-[#0F172A]">Mover críticos:</strong> Desde la vista de tienda, mueve productos &lt;10 días al almacén o a otra tienda con más rotación.</span>
+                  <span><strong className="text-[#0F172A]">Gana la tienda con MENOS riesgo:</strong> Cuantos menos productos &lt;90 días tengas, mejor posición. Elimina, vende o mueve todo lo posible.</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-[#1565C0] font-bold mt-0.5">2.</span>
-                  <span><strong className="text-[#0F172A]">Promocionar urgentes:</strong> Marca productos 10-30 días como "VENDIDO" o aplícalos como REGALO CADUCADO para evitar pérdida total.</span>
+                  <span><strong className="text-[#0F172A]">Prioriza críticos y urgentes:</strong> Los críticos penalizan ×4 y los urgentes ×3. Resolver uno crítico equivale a resolver cuatro recomendados.</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-[#1565C0] font-bold mt-0.5">3.</span>
-                  <span><strong className="text-[#0F172A]">Rotar prioritarios:</strong> Productos 30-60 días deben ir a mostrador o promociones para acelerar salida.</span>
+                  <span><strong className="text-[#0F172A]">Mueve a tiempo los recomendados:</strong> Productos 60-90 días deben salir antes de entrar en prioridad. Mover anticipadamente evita penalización futura.</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-[#1565C0] font-bold mt-0.5">4.</span>
-                  <span><strong className="text-[#0F172A]">Revisar semanalmente:</strong> Entra cada lunes a "Caducados a fecha" en Administración y resuelve antes de que pasen a crítico.</span>
+                  <span><strong className="text-[#0F172A]">Revisar semanalmente:</strong> Entra cada lunes a "Caducados a fecha" en Administración y resuelve para evitar que pasen a peor estado.</span>
                 </li>
               </ul>
             </div>

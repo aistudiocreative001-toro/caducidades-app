@@ -38,6 +38,7 @@ export default function ProductoCard({
     if (esAlmacen) {
       if (diasNum <= 30) return 'URGENTE';
       if (diasNum <= 60) return 'PRIORITARIO';
+      if (diasNum <= 90) return 'RECOMENDADO';
       return 'PROGRAMAR';
     }
     return p.estado;
@@ -47,6 +48,7 @@ export default function ProductoCard({
     if (esAlmacen) {
       if (diasNum <= 30) return '#FEE2E2';
       if (diasNum <= 60) return '#FFF7ED';
+      if (diasNum <= 90) return '#ECFEFF';
       return '#FEF3C7';
     }
     return getEstadoStyle(p.estado).bg;
@@ -56,6 +58,7 @@ export default function ProductoCard({
     if (esAlmacen) {
       if (diasNum <= 30) return '#DC2626';
       if (diasNum <= 60) return '#EA580C';
+      if (diasNum <= 90) return '#06B6D4';
       return '#D97706';
     }
     return getEstadoStyle(p.estado).color;
