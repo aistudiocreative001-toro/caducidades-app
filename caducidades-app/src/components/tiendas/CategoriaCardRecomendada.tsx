@@ -164,6 +164,25 @@ export default function CategoriaCard({
             </span>
           </div>
           
+          {/* Observaciones icon */}
+          <div className="mb-3">
+            {p.observaciones && p.observaciones.trim() !== '' && p.observaciones !== '#N/A' ? (
+              <span className="inline-flex items-center gap-1 text-xs text-[#1565C0] cursor-help" title={p.observaciones}>
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="truncate max-w-[220px]">{p.observaciones}</span>
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 text-xs text-[#CBD5E1]">
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>Sin observaciones</span>
+              </span>
+            )}
+          </div>
+          
           {!esAlmacen ? (
             <div className="flex items-center gap-3">
               <div className="flex items-center border border-[#E2E8F0] rounded-lg">

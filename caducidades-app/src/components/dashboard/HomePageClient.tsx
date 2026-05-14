@@ -102,9 +102,7 @@ export default function HomePageClient() {
           </p>
         </div>
 
-        <RankingPodio productos={productos} />
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 items-start gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 items-start gap-4 mb-6">
           {TIENDAS.map((tienda) => (
             <TiendaCard
               key={tienda.key}
@@ -114,6 +112,63 @@ export default function HomePageClient() {
               productos={productos.filter(p => p.ubi === tienda.key)}
             />
           ))}
+        </div>
+
+        <RankingPodio productos={productos} />
+
+        <div className="mt-6 bg-[#F8FAFC] rounded-xl border border-[#E2E8F0] p-5 sm:p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <svg className="w-5 h-5 text-[#1565C0]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <h2 className="text-base font-bold text-[#0F172A]">¿Cómo se calcula el ranking?</h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+            <div className="space-y-3">
+              <h3 className="font-semibold text-[#0F172A]">Métricas del ranking</h3>
+              <ul className="space-y-2 text-[#64748B]">
+                <li className="flex items-start gap-2">
+                  <span className="inline-block w-2 h-2 rounded-full bg-[#059669] mt-1.5 shrink-0" />
+                  <span><strong className="text-[#0F172A]">Uds activas:</strong> Productos con fecha vigente y estado abierto. Cuanto más stock activo, mejor puntuación.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="inline-block w-2 h-2 rounded-full bg-[#DC2626] mt-1.5 shrink-0" />
+                  <span><strong className="text-[#0F172A]">Crítico (&lt;10 días):</strong> Productos a punto de caducar. Restan puntos porque representan pérdida inminente.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="inline-block w-2 h-2 rounded-full bg-[#EA580C] mt-1.5 shrink-0" />
+                  <span><strong className="text-[#0F172A]">Urgente (10-30 días):</strong> Productos con poco margen. También restan, aunque menos que los críticos.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="inline-block w-2 h-2 rounded-full bg-[#D97706] mt-1.5 shrink-0" />
+                  <span><strong className="text-[#0F172A]">Prioritario (30-60 días):</strong> Deben planificarse promociones o movimientos antes de que entren en urgencia.</span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="space-y-3">
+              <h3 className="font-semibold text-[#0F172A]">¿Cómo mejorar la puntuación?</h3>
+              <ul className="space-y-2 text-[#64748B]">
+                <li className="flex items-start gap-2">
+                  <span className="text-[#1565C0] font-bold mt-0.5">1.</span>
+                  <span><strong className="text-[#0F172A]">Mover críticos:</strong> Desde la vista de tienda, mueve productos &lt;10 días al almacén o a otra tienda con más rotación.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-[#1565C0] font-bold mt-0.5">2.</span>
+                  <span><strong className="text-[#0F172A]">Promocionar urgentes:</strong> Marca productos 10-30 días como "VENDIDO" o aplícalos como REGALO CADUCADO para evitar pérdida total.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-[#1565C0] font-bold mt-0.5">3.</span>
+                  <span><strong className="text-[#0F172A]">Rotar prioritarios:</strong> Productos 30-60 días deben ir a mostrador o promociones para acelerar salida.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-[#1565C0] font-bold mt-0.5">4.</span>
+                  <span><strong className="text-[#0F172A]">Revisar semanalmente:</strong> Entra cada lunes a "Caducados a fecha" en Administración y resuelve antes de que pasen a crítico.</span>
+                </li>
+              </ul>
+            </div>
+          </div>
         </div>
       </main>
       <CaducadosModal

@@ -653,6 +653,19 @@ export default function AdminPageClient() {
                     </td>
                     <td className="px-1.5 py-1 text-center">
                       <div className="flex items-center justify-center gap-1.5">
+                        {p.observaciones && p.observaciones.trim() !== '' && p.observaciones !== '#N/A' ? (
+                          <span className="cursor-help" title={p.observaciones}>
+                            <svg className="w-3.5 h-3.5 text-[#1565C0]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                          </span>
+                        ) : (
+                          <span title="Sin observaciones">
+                            <svg className="w-3.5 h-3.5 text-[#CBD5E1]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                          </span>
+                        )}
                         <button onClick={() => openEdit(p)} className="text-[#94A3B8] hover:text-[#1565C0] transition-colors" title="Editar"><Edit className="w-3.5 h-3.5" /></button>
                         <button onClick={() => openMover(p)} className="text-[#94A3B8] hover:text-[#FB8C00] transition-colors" title="Mover"><Truck className="w-3.5 h-3.5" /></button>
                         <button onClick={() => handleDelete(p.id)} className="text-[#94A3B8] hover:text-[#DC2626] transition-colors" title="Eliminar"><Trash2 className="w-3.5 h-3.5" /></button>
