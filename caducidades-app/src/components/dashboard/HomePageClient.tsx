@@ -156,7 +156,7 @@ export default function HomePageClient() {
               <ul className="space-y-2 text-[#64748B]">
                 <li className="flex items-start gap-2">
                   <span className="text-[#1565C0] font-bold mt-0.5">1.</span>
-                  <span><strong className="text-[#0F172A]">Gana la tienda con MENOS riesgo:</strong> Cuantos menos productos &lt;90 días tengas, mejor posición. Elimina, vende o mueve todo lo posible.</span>
+                  <span><strong className="text-[#0F172A]">Gana la tienda con MENOS riesgo:</strong> Cuantos menos productos &lt;90 días tengas, mejor posición. Vende o reparte unidades entre tiendas antes de que penalice.</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-[#1565C0] font-bold mt-0.5">2.</span>
