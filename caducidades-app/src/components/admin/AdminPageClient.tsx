@@ -490,7 +490,7 @@ export default function AdminPageClient() {
               <table className="w-full text-sm">
                 <thead className="bg-[#FEE2E2] sticky top-0">
                   <tr className="text-left">
-                    {['Ubicación','Producto','Marca','Cat.','Uds','Coste','Estado','Fecha','Días'].map(h => (
+                    {['Ubicación','Producto','Marca','Cat.','Uds','Coste','Estado','Fecha','Días','Obs.'].map(h => (
                       <th key={h} className="px-3 py-2 font-semibold text-[#0F172A] text-[10px] uppercase tracking-wide whitespace-nowrap">{h}</th>
                     ))}
                   </tr>
@@ -522,6 +522,23 @@ export default function AdminPageClient() {
                         <td className="px-3 py-2 whitespace-nowrap text-[#64748B]">{p.fecha}</td>
                         <td className="px-3 py-2 whitespace-nowrap font-bold text-[#DC2626]">
                           {p.dias != null ? `${p.dias} d` : '-'}
+                        </td>
+                        <td className="px-3 py-2 whitespace-nowrap">
+                          {p.observaciones && p.observaciones.trim() !== '' && p.observaciones !== '#N/A' ? (
+                            <span className="inline-flex items-center gap-1 text-[#1565C0] cursor-help" title={p.observaciones}>
+                              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              <span className="text-[10px] truncate max-w-[80px]">{p.observaciones}</span>
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 text-[#CBD5E1]" title="Sin observaciones">
+                              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              <span className="text-[10px]">-</span>
+                            </span>
+                          )}
                         </td>
                       </tr>
                     );
